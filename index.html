@@ -112,6 +112,33 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
+        .week-selector {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .week-selector label {
+            font-weight: 600;
+            color: #c41e3a;
+        }
+
+        .week-selector select {
+            padding: 8px 16px;
+            border: 2px solid #d4af37;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .week-selector select:focus {
+            outline: none;
+            border-color: #c41e3a;
+        }
+
         .riddles-title {
             font-size: 1.5em;
             color: #c41e3a;
@@ -136,6 +163,12 @@
         .riddle-card.solved {
             opacity: 0.6;
             border-left-color: #4caf50;
+        }
+
+        .riddle-card.expired {
+            opacity: 0.7;
+            border-left-color: #ff9800;
+            background: #fff5e6;
         }
 
         .riddle-header {
@@ -165,6 +198,11 @@
         .riddle-status.solved {
             background: #d4edda;
             color: #155724;
+        }
+
+        .riddle-status.expired {
+            background: #fff3cd;
+            color: #856404;
         }
 
         .riddle-text {
@@ -343,10 +381,28 @@
         </div>
 
         <div class="riddles-section">
+            <div class="week-selector">
+                <label for="week-select">Select Week:</label>
+                <select id="week-select" onchange="switchWeek()">
+                    <option value="1">Week 1</option>
+                    <option value="2">Week 2</option>
+                    <option value="3">Week 3</option>
+                    <option value="4">Week 4</option>
+                </select>
+            </div>
             <h2 class="riddles-title">🎅 Christmas Riddles 🎄</h2>
             <div id="riddles-container">
                 <div class="loading">Loading riddles...</div>
             </div>
+        </div>
+
+        <div class="riddles-section" id="expired-section" style="display: none;">
+            <h2 class="riddles-title">⏰ Expired Riddles</h2>
+            <p style="color: #666; font-style: italic; margin-bottom: 15px;">
+                These riddles have expired but you can still test your knowledge!
+                Solving these won't add to your score.
+            </p>
+            <div id="expired-riddles-container"></div>
         </div>
 
         <footer>
@@ -378,18 +434,48 @@
 
     <script>
         const API_BASE_URL = 'https://cardioid.co.nz/api';
-        let riddlesData = [];
-        let solvedRiddles = JSON.parse(localStorage.getItem('solvedRiddles') || '{}');
+        let riddlesData = { active: [], expired: [] };
+        let currentWeek = parseInt(localStorage.getItem('currentWeek') || '1');
+        let solvedRiddles = {};
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Load the current week
+            document.getElementById('week-select').value = currentWeek;
+            loadWeekData();
             loadRiddles();
             updateCombinationDisplay();
         });
 
+        // Load week-specific data from localStorage
+        function loadWeekData() {
+            const weekKey = `solvedRiddles_week${currentWeek}`;
+            solvedRiddles = JSON.parse(localStorage.getItem(weekKey) || '{}');
+        }
+
+        // Save week-specific data to localStorage
+        function saveWeekData() {
+            const weekKey = `solvedRiddles_week${currentWeek}`;
+            localStorage.setItem(weekKey, JSON.stringify(solvedRiddles));
+        }
+
+        // Switch to a different week
+        function switchWeek() {
+            const newWeek = parseInt(document.getElementById('week-select').value);
+            if (newWeek !== currentWeek) {
+                currentWeek = newWeek;
+                localStorage.setItem('currentWeek', currentWeek);
+                loadWeekData();
+                loadRiddles();
+                updateCombinationDisplay();
+            }
+        }
+
         // Load active riddles from API
         async function loadRiddles() {
             const container = document.getElementById('riddles-container');
+            const expiredContainer = document.getElementById('expired-riddles-container');
+            const expiredSection = document.getElementById('expired-section');
 
             try {
                 const response = await fetch(`${API_BASE_URL}/riddles/active`);
@@ -400,11 +486,32 @@
 
                 const data = await response.json();
 
-                if (data.status === 'success' && data.riddles && data.riddles.length > 0) {
-                    riddlesData = data.riddles;
-                    displayRiddles(riddlesData);
+                if (data.status === 'success') {
+                    // Filter riddles by current week
+                    const activeRiddles = (data.active_riddles || data.riddles || [])
+                        .filter(r => !r.week || r.week == currentWeek);
+                    const expiredRiddles = (data.expired_riddles || [])
+                        .filter(r => !r.week || r.week == currentWeek);
+
+                    riddlesData = { active: activeRiddles, expired: expiredRiddles };
+
+                    // Display active riddles
+                    if (activeRiddles.length > 0) {
+                        displayRiddles(activeRiddles, container, false);
+                    } else {
+                        container.innerHTML = '<div class="no-riddles">🎅 No active riddles for this week yet!</div>';
+                    }
+
+                    // Display expired riddles
+                    if (expiredRiddles.length > 0) {
+                        displayRiddles(expiredRiddles, expiredContainer, true);
+                        expiredSection.style.display = 'block';
+                    } else {
+                        expiredSection.style.display = 'none';
+                    }
                 } else {
                     container.innerHTML = '<div class="no-riddles">🎅 No riddles available yet. Santa is preparing more festive challenges!</div>';
+                    expiredSection.style.display = 'none';
                 }
             } catch (error) {
                 console.error('Error loading riddles:', error);
@@ -413,13 +520,12 @@
                         Unable to load riddles. Please check your connection and try again.
                     </div>
                 `;
+                expiredSection.style.display = 'none';
             }
         }
 
         // Display riddles in the UI
-        function displayRiddles(riddles) {
-            const container = document.getElementById('riddles-container');
-
+        function displayRiddles(riddles, container, isExpired = false) {
             if (riddles.length === 0) {
                 container.innerHTML = '<div class="no-riddles">🎅 No riddles available yet. Santa is preparing more festive challenges!</div>';
                 return;
@@ -427,18 +533,19 @@
 
             container.innerHTML = riddles.map((riddle, index) => {
                 const isSolved = solvedRiddles[riddle.id];
-                const statusClass = isSolved ? 'solved' : 'active';
-                const statusText = isSolved ? '✓ Solved' : 'Active';
+                const statusClass = isSolved ? 'solved' : (isExpired ? 'expired' : 'active');
+                const statusText = isSolved ? '✓ Solved' : (isExpired ? '⏰ Expired' : 'Active');
+                const cardClass = isSolved ? 'solved' : (isExpired ? 'expired' : '');
 
                 return `
-                    <div class="riddle-card ${isSolved ? 'solved' : ''}" data-riddle-id="${riddle.id}">
+                    <div class="riddle-card ${cardClass}" data-riddle-id="${riddle.id}" data-is-expired="${isExpired}">
                         <div class="riddle-header">
                             <span class="riddle-number">Riddle #${riddle.position || (index + 1)}</span>
                             <span class="riddle-status ${statusClass}">${statusText}</span>
                         </div>
                         <div class="riddle-text">${riddle.riddle_text}</div>
                         ${!isSolved ? `
-                            <form class="answer-form" data-riddle-id="${riddle.id}">
+                            <form class="answer-form" data-riddle-id="${riddle.id}" data-is-expired="${isExpired}">
                                 <input
                                     type="text"
                                     class="answer-input"
@@ -451,7 +558,7 @@
                             </form>
                             <div class="feedback" id="feedback-${riddle.id}"></div>
                         ` : `
-                            <div class="feedback success">Correct! You unlocked digit ${riddle.position}</div>
+                            <div class="feedback success">${isExpired ? 'Correct! (Expired - no score)' : `Correct! You unlocked digit ${riddle.position}`}</div>
                         `}
                     </div>
                 `;
@@ -464,14 +571,28 @@
             if (event.target.classList.contains('answer-form')) {
                 event.preventDefault();
                 const riddleId = event.target.getAttribute('data-riddle-id');
+                const isExpired = event.target.getAttribute('data-is-expired') === 'true';
                 if (riddleId) {
-                    submitAnswer(event, riddleId);
+                    submitAnswer(event, riddleId, isExpired);
+                }
+            }
+        });
+
+        // Set up event delegation for expired riddles form submissions
+        document.getElementById('expired-riddles-container').addEventListener('submit', function(event) {
+            // Check if the submitted element is an answer form
+            if (event.target.classList.contains('answer-form')) {
+                event.preventDefault();
+                const riddleId = event.target.getAttribute('data-riddle-id');
+                const isExpired = event.target.getAttribute('data-is-expired') === 'true';
+                if (riddleId) {
+                    submitAnswer(event, riddleId, isExpired);
                 }
             }
         });
 
         // Submit answer to API
-        async function submitAnswer(event, riddleId) {
+        async function submitAnswer(event, riddleId, isExpired = false) {
             event.preventDefault();
 
             const input = document.getElementById(`answer-${riddleId}`);
@@ -507,22 +628,40 @@
                 if (data.status === 'success' && data.correct) {
                     // Correct answer!
                     feedback.className = 'feedback success';
-                    feedback.textContent = `Correct! You unlocked digit ${data.position}: ${data.digit}`;
 
-                    // Store solved riddle
-                    solvedRiddles[riddleId] = {
-                        digit: data.digit,
-                        position: data.position,
-                        solvedAt: new Date().toISOString()
-                    };
-                    localStorage.setItem('solvedRiddles', JSON.stringify(solvedRiddles));
+                    if (isExpired || data.is_expired) {
+                        // Expired riddle - don't add to score
+                        feedback.textContent = `Correct! (Expired - no score)`;
+                    } else {
+                        // Active riddle - add to score
+                        feedback.textContent = `Correct! You unlocked digit ${data.position}: ${data.digit}`;
 
-                    // Update display
-                    updateCombinationDisplay();
+                        // Store solved riddle
+                        solvedRiddles[riddleId] = {
+                            digit: data.digit,
+                            position: data.position,
+                            solvedAt: new Date().toISOString()
+                        };
+                        saveWeekData();
+
+                        // Update display
+                        updateCombinationDisplay();
+                    }
+
+                    // Mark as solved even if expired
+                    if (isExpired || data.is_expired) {
+                        solvedRiddles[riddleId] = {
+                            digit: data.digit,
+                            position: data.position,
+                            solvedAt: new Date().toISOString(),
+                            expired: true
+                        };
+                        saveWeekData();
+                    }
 
                     // Refresh riddles display after a moment
                     setTimeout(() => {
-                        displayRiddles(riddlesData);
+                        loadRiddles();
                     }, 1500);
 
                 } else {
@@ -543,12 +682,12 @@
 
         // Update the combination display
         function updateCombinationDisplay() {
-            // Get all solved riddles sorted by position
+            // Get all solved riddles sorted by position (excluding expired)
             const positions = [1, 2, 3];
 
             positions.forEach(position => {
                 const digitBox = document.getElementById(`digit-${position}`);
-                const solved = Object.values(solvedRiddles).find(r => r.position === position);
+                const solved = Object.values(solvedRiddles).find(r => r.position === position && !r.expired);
 
                 if (solved) {
                     digitBox.textContent = solved.digit;
@@ -559,8 +698,9 @@
                 }
             });
 
-            // Check if all digits are collected
-            if (Object.keys(solvedRiddles).length >= 3) {
+            // Check if all digits are collected (only non-expired riddles)
+            const nonExpiredSolved = Object.values(solvedRiddles).filter(r => !r.expired);
+            if (nonExpiredSolved.length >= 3) {
                 setTimeout(() => {
                     alert('🎄🎅 Ho Ho Ho! Congratulations! You\'ve unlocked Santa\'s secret code! Merry Christmas! 🎁✨');
                 }, 500);
@@ -569,9 +709,25 @@
 
         // Reset function (for testing - can be called from console)
         function resetProgress() {
-            if (confirm('Are you sure you want to reset your progress?')) {
-                localStorage.removeItem('solvedRiddles');
+            if (confirm('Are you sure you want to reset your progress for the current week?')) {
+                const weekKey = `solvedRiddles_week${currentWeek}`;
+                localStorage.removeItem(weekKey);
                 solvedRiddles = {};
+                updateCombinationDisplay();
+                loadRiddles();
+            }
+        }
+
+        // Reset all weeks (for testing - can be called from console)
+        function resetAllProgress() {
+            if (confirm('Are you sure you want to reset ALL progress for ALL weeks?')) {
+                for (let i = 1; i <= 4; i++) {
+                    localStorage.removeItem(`solvedRiddles_week${i}`);
+                }
+                localStorage.removeItem('currentWeek');
+                solvedRiddles = {};
+                currentWeek = 1;
+                document.getElementById('week-select').value = 1;
                 updateCombinationDisplay();
                 loadRiddles();
             }
