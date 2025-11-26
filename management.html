@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riddle Management Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .auth-section {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+
+        .auth-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .auth-status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .auth-status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #da190b 100%);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .riddles-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .riddles-table th,
+        .riddles-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .riddles-table th {
+            background: #f8f9ff;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .riddles-table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-position {
+            background: #667eea;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .riddles-table {
+                font-size: 0.9em;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 Riddle Management Dashboard</h1>
+            <p class="subtitle">Admin interface for the Riddle Lock Challenge</p>
+        </header>
+
+        <!-- Auth Section -->
+        <div class="section auth-section">
+            <div class="section-title">
+                Authentication
+                <span class="auth-status" id="auth-status">Not Configured</span>
+            </div>
+            <div class="form-group">
+                <label for="auth-code">Auth Code:</label>
+                <input
+                    type="password"
+                    id="auth-code"
+                    placeholder="Enter your authentication code"
+                    autocomplete="off"
+                >
+            </div>
+            <button class="btn" onclick="saveAuthCode()">Save Auth Code</button>
+            <button class="btn btn-secondary" onclick="clearAuthCode()">Clear Auth Code</button>
+            <div id="auth-feedback"></div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="section hidden" id="stats-section">
+            <div class="section-title">Statistics</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-riddles">0</div>
+                    <div class="stat-label">Total Riddles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="active-riddles">0</div>
+                    <div class="stat-label">Active Riddles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="inactive-riddles">0</div>
+                    <div class="stat-label">Inactive Riddles</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Riddle Section -->
+        <div class="section hidden" id="create-section">
+            <div class="section-title">Create New Riddle</div>
+            <form onsubmit="submitRiddle(event)">
+                <div class="form-group">
+                    <label for="riddle-text">Riddle Text: *</label>
+                    <textarea
+                        id="riddle-text"
+                        placeholder="Enter your riddle question..."
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="riddle-answer">Answer: *</label>
+                    <input
+                        type="text"
+                        id="riddle-answer"
+                        placeholder="e.g., echo"
+                        required
+                    >
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="riddle-digit">Digit (0-9): *</label>
+                        <input
+                            type="number"
+                            id="riddle-digit"
+                            min="0"
+                            max="9"
+                            placeholder="0-9"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="riddle-position">Position (1-3): *</label>
+                        <input
+                            type="number"
+                            id="riddle-position"
+                            min="1"
+                            max="3"
+                            placeholder="1-3"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="riddle-week">Week (optional):</label>
+                        <input
+                            type="number"
+                            id="riddle-week"
+                            min="1"
+                            placeholder="e.g., 1"
+                        >
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="riddle-notes">Notes (optional):</label>
+                    <input
+                        type="text"
+                        id="riddle-notes"
+                        placeholder="e.g., Week 1 - Monday"
+                    >
+                </div>
+
+                <button type="submit" class="btn" id="submit-riddle-btn">Create Riddle</button>
+                <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+            </form>
+            <div id="create-feedback"></div>
+        </div>
+
+        <!-- View Riddles Section -->
+        <div class="section hidden" id="riddles-section">
+            <div class="section-title">
+                All Riddles
+                <button class="btn btn-small" onclick="loadRiddles()">🔄 Refresh</button>
+            </div>
+            <div id="riddles-container">
+                <div class="loading">Loading riddles...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://cardioid.co.nz/api';
+        let authCode = localStorage.getItem('riddle_admin_auth') || '';
+        let allRiddles = [];
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (authCode) {
+                document.getElementById('auth-code').value = authCode;
+                updateAuthStatus(true);
+                loadRiddles();
+            } else {
+                updateAuthStatus(false);
+            }
+        });
+
+        // Update auth status display
+        function updateAuthStatus(isAuthenticated) {
+            const statusEl = document.getElementById('auth-status');
+            const createSection = document.getElementById('create-section');
+            const riddlesSection = document.getElementById('riddles-section');
+            const statsSection = document.getElementById('stats-section');
+
+            if (isAuthenticated) {
+                statusEl.textContent = '✓ Configured';
+                statusEl.className = 'auth-status active';
+                createSection.classList.remove('hidden');
+                riddlesSection.classList.remove('hidden');
+                statsSection.classList.remove('hidden');
+            } else {
+                statusEl.textContent = '✗ Not Configured';
+                statusEl.className = 'auth-status inactive';
+                createSection.classList.add('hidden');
+                riddlesSection.classList.add('hidden');
+                statsSection.classList.add('hidden');
+            }
+        }
+
+        // Save auth code
+        function saveAuthCode() {
+            const code = document.getElementById('auth-code').value.trim();
+            const feedbackEl = document.getElementById('auth-feedback');
+
+            if (!code) {
+                feedbackEl.innerHTML = '<div class="alert alert-error">Please enter an auth code</div>';
+                return;
+            }
+
+            authCode = code;
+            localStorage.setItem('riddle_admin_auth', code);
+            updateAuthStatus(true);
+
+            feedbackEl.innerHTML = '<div class="alert alert-success">Auth code saved! You can now manage riddles.</div>';
+            setTimeout(() => {
+                feedbackEl.innerHTML = '';
+            }, 3000);
+
+            loadRiddles();
+        }
+
+        // Clear auth code
+        function clearAuthCode() {
+            if (confirm('Are you sure you want to clear the auth code?')) {
+                authCode = '';
+                localStorage.removeItem('riddle_admin_auth');
+                document.getElementById('auth-code').value = '';
+                updateAuthStatus(false);
+
+                const feedbackEl = document.getElementById('auth-feedback');
+                feedbackEl.innerHTML = '<div class="alert alert-info">Auth code cleared</div>';
+                setTimeout(() => {
+                    feedbackEl.innerHTML = '';
+                }, 3000);
+            }
+        }
+
+        // Submit new riddle
+        async function submitRiddle(event) {
+            event.preventDefault();
+
+            const submitBtn = document.getElementById('submit-riddle-btn');
+            const feedbackEl = document.getElementById('create-feedback');
+
+            if (!authCode) {
+                feedbackEl.innerHTML = '<div class="alert alert-error">Please configure auth code first</div>';
+                return;
+            }
+
+            // Get form values
+            const riddleData = {
+                riddle_text: document.getElementById('riddle-text').value.trim(),
+                answer: document.getElementById('riddle-answer').value.trim(),
+                digit: parseInt(document.getElementById('riddle-digit').value),
+                position: parseInt(document.getElementById('riddle-position').value),
+                week: document.getElementById('riddle-week').value || null,
+                notes: document.getElementById('riddle-notes').value.trim() || '',
+                auth_code: authCode
+            };
+
+            submitBtn.disabled = true;
+            feedbackEl.innerHTML = '<div class="alert alert-info">Creating riddle...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/riddles/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(riddleData)
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    feedbackEl.innerHTML = `<div class="alert alert-success">✓ Riddle created successfully! ID: ${data.riddle_id}</div>`;
+                    clearForm();
+                    loadRiddles();
+                } else {
+                    feedbackEl.innerHTML = `<div class="alert alert-error">Error: ${data.message}</div>`;
+                }
+            } catch (error) {
+                console.error('Error creating riddle:', error);
+                feedbackEl.innerHTML = '<div class="alert alert-error">Error creating riddle. Check console for details.</div>';
+            } finally {
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('riddle-text').value = '';
+            document.getElementById('riddle-answer').value = '';
+            document.getElementById('riddle-digit').value = '';
+            document.getElementById('riddle-position').value = '';
+            document.getElementById('riddle-week').value = '';
+            document.getElementById('riddle-notes').value = '';
+        }
+
+        // Load all riddles
+        async function loadRiddles() {
+            if (!authCode) {
+                return;
+            }
+
+            const container = document.getElementById('riddles-container');
+            container.innerHTML = '<div class="loading">Loading riddles...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/riddles/all?auth_code=${encodeURIComponent(authCode)}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    allRiddles = data.riddles || [];
+                    displayRiddles(allRiddles);
+                    updateStats(allRiddles);
+                } else {
+                    container.innerHTML = `<div class="alert alert-error">Error: ${data.message}</div>`;
+                }
+            } catch (error) {
+                console.error('Error loading riddles:', error);
+                container.innerHTML = '<div class="alert alert-error">Error loading riddles. Check console for details.</div>';
+            }
+        }
+
+        // Display riddles in table
+        function displayRiddles(riddles) {
+            const container = document.getElementById('riddles-container');
+
+            if (riddles.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No riddles found. Create your first riddle above!</div>';
+                return;
+            }
+
+            // Sort by created_at descending
+            riddles.sort((a, b) => {
+                return new Date(b.created_at) - new Date(a.created_at);
+            });
+
+            let html = `
+                <table class="riddles-table">
+                    <thead>
+                        <tr>
+                            <th>Riddle</th>
+                            <th>Answer</th>
+                            <th>Digit</th>
+                            <th>Pos</th>
+                            <th>Week</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            riddles.forEach(riddle => {
+                const isActive = riddle.is_active === 1;
+                const statusBadge = isActive
+                    ? '<span class="badge badge-active">Active</span>'
+                    : '<span class="badge badge-inactive">Inactive</span>';
+
+                html += `
+                    <tr>
+                        <td style="max-width: 300px;">${riddle.riddle_text}</td>
+                        <td><strong>${riddle.answer}</strong></td>
+                        <td><span class="badge badge-position">${riddle.digit}</span></td>
+                        <td><span class="badge badge-position">${riddle.position}</span></td>
+                        <td>${riddle.week || '-'}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <div class="action-buttons">
+                                ${isActive
+                                    ? `<button class="btn btn-small btn-danger" onclick="deactivateRiddle('${riddle.id}')">Deactivate</button>`
+                                    : `<button class="btn btn-small btn-success" onclick="activateRiddle('${riddle.id}')">Activate</button>`
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Update statistics
+        function updateStats(riddles) {
+            const total = riddles.length;
+            const active = riddles.filter(r => r.is_active === 1).length;
+            const inactive = total - active;
+
+            document.getElementById('total-riddles').textContent = total;
+            document.getElementById('active-riddles').textContent = active;
+            document.getElementById('inactive-riddles').textContent = inactive;
+        }
+
+        // Activate riddle
+        async function activateRiddle(riddleId) {
+            if (!confirm('Activate this riddle? It will become visible to participants.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/riddles/activate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        riddle_id: riddleId,
+                        auth_code: authCode
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    alert('✓ Riddle activated successfully!');
+                    loadRiddles();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error activating riddle:', error);
+                alert('Error activating riddle. Check console for details.');
+            }
+        }
+
+        // Deactivate riddle
+        async function deactivateRiddle(riddleId) {
+            if (!confirm('Deactivate this riddle? It will be hidden from participants.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/riddles/deactivate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        riddle_id: riddleId,
+                        auth_code: authCode
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    alert('✓ Riddle deactivated successfully!');
+                    loadRiddles();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error deactivating riddle:', error);
+                alert('Error deactivating riddle. Check console for details.');
+            }
+        }
+    </script>
+</body>
+</html>

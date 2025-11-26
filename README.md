@@ -14,11 +14,17 @@ This system allows you to run a 3-week riddle challenge where:
 
 ### Frontend (This Repo)
 - **index.html** - The main webpage hosted on GitHub Pages
-- Beautiful, responsive design
-- Shows active riddles
-- Allows users to submit answers
-- Displays collected digits in a combination lock display
-- Stores progress locally in browser
+  - Beautiful, responsive design
+  - Shows active riddles
+  - Allows users to submit answers
+  - Displays collected digits in a combination lock display
+  - Stores progress locally in browser
+- **management.html** - Admin dashboard for managing riddles
+  - Easy-to-use interface for creating riddles
+  - View all riddles in a table
+  - Activate/deactivate riddles with one click
+  - Statistics dashboard
+  - No need for curl commands!
 
 ### Backend (Separate Repo)
 - R Plumber API hosted at `cardioid.co.nz/api`
@@ -59,7 +65,24 @@ const API_BASE_URL = 'https://your-api-domain.com/api';
 
 ### For Administrators
 
-#### 1. Submit a New Riddle
+#### Using the Management Dashboard (Recommended)
+
+The easiest way to manage riddles is through the **management.html** interface:
+
+1. **Access the Dashboard**: Visit `https://[your-github-pages-url]/management.html`
+2. **Enter Auth Code**: Enter your authentication code and click "Save Auth Code"
+3. **Create Riddles**: Use the form to create new riddles with all the details
+4. **View All Riddles**: See all riddles in a table with their status
+5. **Activate/Deactivate**: Click buttons to make riddles visible or hidden to participants
+6. **Monitor Stats**: See how many riddles are active/inactive at a glance
+
+Your auth code is stored securely in your browser's localStorage.
+
+#### Using Command Line (Alternative)
+
+If you prefer using curl commands:
+
+**1. Submit a New Riddle:**
 
 ```bash
 curl -X POST "https://cardioid.co.nz/api/riddles/submit" \
@@ -77,9 +100,7 @@ curl -X POST "https://cardioid.co.nz/api/riddles/submit" \
 
 This creates the riddle but keeps it inactive (not visible to users).
 
-#### 2. Activate a Riddle
-
-When you're ready to make it available to participants:
+**2. Activate a Riddle:**
 
 ```bash
 curl -X POST "https://cardioid.co.nz/api/riddles/activate" \
@@ -90,7 +111,7 @@ curl -X POST "https://cardioid.co.nz/api/riddles/activate" \
   }'
 ```
 
-#### 3. View All Riddles
+**3. View All Riddles:**
 
 ```bash
 curl "https://cardioid.co.nz/api/riddles/all?auth_code=YOUR_AUTH_CODE"
