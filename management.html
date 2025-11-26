@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Riddle Management Dashboard</title>
+    <title>🎄 Christmas Riddle Management</title>
     <style>
         * {
             margin: 0;
@@ -13,10 +13,12 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f4c20 0%, #8B0000 100%);
             min-height: 100vh;
             padding: 20px;
             color: #333;
+            overflow-x: hidden;
+            position: relative;
         }
 
         .container {
@@ -51,7 +53,7 @@
 
         .section-title {
             font-size: 1.5em;
-            color: #667eea;
+            color: #c41e3a;
             margin-bottom: 20px;
             font-weight: 600;
             display: flex;
@@ -110,7 +112,7 @@
         input:focus,
         textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #d4af37;
         }
 
         textarea {
@@ -127,7 +129,7 @@
 
         .btn {
             padding: 12px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #c41e3a 0%, #8B0000 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -135,6 +137,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
 
         .btn:hover {
@@ -203,13 +206,13 @@
         }
 
         .riddles-table th {
-            background: #f8f9ff;
-            color: #667eea;
+            background: #fff9f0;
+            color: #c41e3a;
             font-weight: 600;
         }
 
         .riddles-table tr:hover {
-            background: #f8f9ff;
+            background: #fff9f0;
         }
 
         .badge {
@@ -231,14 +234,14 @@
         }
 
         .badge-position {
-            background: #667eea;
+            background: #c41e3a;
             color: white;
         }
 
         .loading {
             text-align: center;
             padding: 40px;
-            color: #667eea;
+            color: #c41e3a;
             font-size: 1.2em;
         }
 
@@ -259,23 +262,62 @@
         }
 
         .stat-card {
-            background: #f8f9ff;
+            background: #fff9f0;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #d4af37;
         }
 
         .stat-number {
             font-size: 2.5em;
             font-weight: bold;
-            color: #667eea;
+            color: #c41e3a;
         }
 
         .stat-label {
             color: #666;
             margin-top: 5px;
         }
+
+        /* Snowflake Animation */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            z-index: 9999;
+            color: white;
+            font-size: 1.5em;
+            pointer-events: none;
+            animation: fall linear infinite;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        .snowflake:nth-child(1) { left: 10%; animation-duration: 10s; animation-delay: 0s; }
+        .snowflake:nth-child(2) { left: 20%; animation-duration: 12s; animation-delay: 1s; font-size: 1.2em; }
+        .snowflake:nth-child(3) { left: 30%; animation-duration: 8s; animation-delay: 2s; font-size: 1.8em; }
+        .snowflake:nth-child(4) { left: 40%; animation-duration: 14s; animation-delay: 0.5s; }
+        .snowflake:nth-child(5) { left: 50%; animation-duration: 11s; animation-delay: 1.5s; font-size: 1.4em; }
+        .snowflake:nth-child(6) { left: 60%; animation-duration: 9s; animation-delay: 3s; }
+        .snowflake:nth-child(7) { left: 70%; animation-duration: 13s; animation-delay: 0.8s; font-size: 1.6em; }
+        .snowflake:nth-child(8) { left: 80%; animation-duration: 10s; animation-delay: 2.5s; }
+        .snowflake:nth-child(9) { left: 90%; animation-duration: 11s; animation-delay: 1.2s; font-size: 1.3em; }
+        .snowflake:nth-child(10) { left: 15%; animation-duration: 12s; animation-delay: 2s; }
+        .snowflake:nth-child(11) { left: 25%; animation-duration: 9s; animation-delay: 0.3s; font-size: 1.7em; }
+        .snowflake:nth-child(12) { left: 35%; animation-duration: 13s; animation-delay: 1.8s; }
+        .snowflake:nth-child(13) { left: 45%; animation-duration: 10s; animation-delay: 0.6s; font-size: 1.2em; }
+        .snowflake:nth-child(14) { left: 55%; animation-duration: 11s; animation-delay: 2.3s; }
+        .snowflake:nth-child(15) { left: 65%; animation-duration: 14s; animation-delay: 1s; font-size: 1.5em; }
+        .snowflake:nth-child(16) { left: 75%; animation-duration: 8s; animation-delay: 0.2s; }
+        .snowflake:nth-child(17) { left: 85%; animation-duration: 12s; animation-delay: 2.8s; font-size: 1.4em; }
+        .snowflake:nth-child(18) { left: 5%; animation-duration: 10s; animation-delay: 1.4s; }
+        .snowflake:nth-child(19) { left: 95%; animation-duration: 13s; animation-delay: 0.9s; font-size: 1.6em; }
+        .snowflake:nth-child(20) { left: 50%; animation-duration: 9s; animation-delay: 2.2s; }
 
         @media (max-width: 768px) {
             h1 {
@@ -299,8 +341,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>🔧 Riddle Management Dashboard</h1>
-            <p class="subtitle">Admin interface for the Riddle Lock Challenge</p>
+            <h1>🎅 Christmas Riddle Management 🎄</h1>
+            <p class="subtitle">Admin interface for the Christmas Riddle Adventure</p>
         </header>
 
         <!-- Auth Section -->
@@ -427,6 +469,28 @@
             </div>
         </div>
     </div>
+
+    <!-- Snowflakes -->
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❅</div>
 
     <script>
         const API_BASE_URL = 'https://cardioid.co.nz/api';
