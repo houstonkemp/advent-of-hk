@@ -372,7 +372,7 @@
                         </div>
                         <div class="riddle-text">${riddle.riddle_text}</div>
                         ${!isSolved ? `
-                            <form class="answer-form" onsubmit="submitAnswer(event, ${riddle.id}); return false;">
+                            <form class="answer-form" data-riddle-id="${riddle.id}">
                                 <input
                                     type="text"
                                     class="answer-input"
@@ -391,6 +391,18 @@
                 `;
             }).join('');
         }
+
+        // Set up event delegation for form submissions
+        document.getElementById('riddles-container').addEventListener('submit', function(event) {
+            // Check if the submitted element is an answer form
+            if (event.target.classList.contains('answer-form')) {
+                event.preventDefault();
+                const riddleId = event.target.getAttribute('data-riddle-id');
+                if (riddleId) {
+                    submitAnswer(event, riddleId);
+                }
+            }
+        });
 
         // Submit answer to API
         async function submitAnswer(event, riddleId) {
