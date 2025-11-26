@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riddle Lock Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .combination-display {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .combination-title {
+            text-align: center;
+            font-size: 1.2em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .digits {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+
+        .digit-box {
+            width: 80px;
+            height: 100px;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .digit-box.unlocked {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #764ba2;
+            animation: unlock 0.5s ease;
+        }
+
+        @keyframes unlock {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .digit-label {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .riddles-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .riddles-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .riddle-card {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .riddle-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .riddle-card.solved {
+            opacity: 0.6;
+            border-left-color: #4caf50;
+        }
+
+        .riddle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .riddle-number {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .riddle-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .riddle-status.active {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .riddle-status.solved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .riddle-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #333;
+            font-style: italic;
+        }
+
+        .answer-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .answer-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .submit-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .feedback.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .feedback.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .no-riddles {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-style: italic;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .digit-box {
+                width: 60px;
+                height: 80px;
+                font-size: 2em;
+            }
+
+            .answer-form {
+                flex-direction: column;
+            }
+
+            .submit-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔐 Riddle Lock Challenge</h1>
+            <p class="subtitle">Solve the riddles to unlock the combination</p>
+        </header>
+
+        <div class="combination-display">
+            <div class="combination-title">Your Combination Progress</div>
+            <div class="digits">
+                <div class="digit-box" id="digit-1">?</div>
+                <div class="digit-box" id="digit-2">?</div>
+                <div class="digit-box" id="digit-3">?</div>
+            </div>
+            <div class="digit-label">Collect all 3 digits to unlock!</div>
+        </div>
+
+        <div class="riddles-section">
+            <h2 class="riddles-title">Active Riddles</h2>
+            <div id="riddles-container">
+                <div class="loading">Loading riddles...</div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Challenge yourself. Unlock the mystery.</p>
+        </footer>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://cardioid.co.nz/api';
+        let riddlesData = [];
+        let solvedRiddles = JSON.parse(localStorage.getItem('solvedRiddles') || '{}');
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRiddles();
+            updateCombinationDisplay();
+        });
+
+        // Load active riddles from API
+        async function loadRiddles() {
+            const container = document.getElementById('riddles-container');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/riddles/active`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to load riddles');
+                }
+
+                const data = await response.json();
+
+                if (data.status === 'success' && data.riddles && data.riddles.length > 0) {
+                    riddlesData = data.riddles;
+                    displayRiddles(riddlesData);
+                } else {
+                    container.innerHTML = '<div class="no-riddles">No riddles available yet. Check back soon!</div>';
+                }
+            } catch (error) {
+                console.error('Error loading riddles:', error);
+                container.innerHTML = `
+                    <div class="error-message">
+                        Unable to load riddles. Please check your connection and try again.
+                    </div>
+                `;
+            }
+        }
+
+        // Display riddles in the UI
+        function displayRiddles(riddles) {
+            const container = document.getElementById('riddles-container');
+
+            if (riddles.length === 0) {
+                container.innerHTML = '<div class="no-riddles">No riddles available yet. Check back soon!</div>';
+                return;
+            }
+
+            container.innerHTML = riddles.map((riddle, index) => {
+                const isSolved = solvedRiddles[riddle.id];
+                const statusClass = isSolved ? 'solved' : 'active';
+                const statusText = isSolved ? '✓ Solved' : 'Active';
+
+                return `
+                    <div class="riddle-card ${isSolved ? 'solved' : ''}" data-riddle-id="${riddle.id}">
+                        <div class="riddle-header">
+                            <span class="riddle-number">Riddle #${riddle.position || (index + 1)}</span>
+                            <span class="riddle-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="riddle-text">${riddle.riddle_text}</div>
+                        ${!isSolved ? `
+                            <form class="answer-form" onsubmit="submitAnswer(event, ${riddle.id})">
+                                <input
+                                    type="text"
+                                    class="answer-input"
+                                    placeholder="Enter your answer..."
+                                    id="answer-${riddle.id}"
+                                    autocomplete="off"
+                                    required
+                                >
+                                <button type="submit" class="submit-btn">Submit</button>
+                            </form>
+                            <div class="feedback" id="feedback-${riddle.id}"></div>
+                        ` : `
+                            <div class="feedback success">Correct! You unlocked digit ${riddle.position}</div>
+                        `}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Submit answer to API
+        async function submitAnswer(event, riddleId) {
+            event.preventDefault();
+
+            const input = document.getElementById(`answer-${riddleId}`);
+            const feedback = document.getElementById(`feedback-${riddleId}`);
+            const submitBtn = event.target.querySelector('.submit-btn');
+
+            const answer = input.value.trim();
+
+            if (!answer) {
+                return;
+            }
+
+            // Disable submit button during request
+            submitBtn.disabled = true;
+            feedback.className = 'feedback';
+            feedback.textContent = 'Checking...';
+            feedback.style.display = 'block';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/riddles/check`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        riddle_id: riddleId,
+                        answer: answer
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success' && data.correct) {
+                    // Correct answer!
+                    feedback.className = 'feedback success';
+                    feedback.textContent = `Correct! You unlocked digit ${data.position}: ${data.digit}`;
+
+                    // Store solved riddle
+                    solvedRiddles[riddleId] = {
+                        digit: data.digit,
+                        position: data.position,
+                        solvedAt: new Date().toISOString()
+                    };
+                    localStorage.setItem('solvedRiddles', JSON.stringify(solvedRiddles));
+
+                    // Update display
+                    updateCombinationDisplay();
+
+                    // Refresh riddles display after a moment
+                    setTimeout(() => {
+                        displayRiddles(riddlesData);
+                    }, 1500);
+
+                } else {
+                    // Incorrect answer
+                    feedback.className = 'feedback error';
+                    feedback.textContent = data.message || 'Incorrect. Try again!';
+                    submitBtn.disabled = false;
+                    input.value = '';
+                    input.focus();
+                }
+            } catch (error) {
+                console.error('Error submitting answer:', error);
+                feedback.className = 'feedback error';
+                feedback.textContent = 'Error submitting answer. Please try again.';
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Update the combination display
+        function updateCombinationDisplay() {
+            // Get all solved riddles sorted by position
+            const positions = [1, 2, 3];
+
+            positions.forEach(position => {
+                const digitBox = document.getElementById(`digit-${position}`);
+                const solved = Object.values(solvedRiddles).find(r => r.position === position);
+
+                if (solved) {
+                    digitBox.textContent = solved.digit;
+                    digitBox.classList.add('unlocked');
+                } else {
+                    digitBox.textContent = '?';
+                    digitBox.classList.remove('unlocked');
+                }
+            });
+
+            // Check if all digits are collected
+            if (Object.keys(solvedRiddles).length >= 3) {
+                setTimeout(() => {
+                    alert('Congratulations! You have unlocked all digits! 🎉');
+                }, 500);
+            }
+        }
+
+        // Reset function (for testing - can be called from console)
+        function resetProgress() {
+            if (confirm('Are you sure you want to reset your progress?')) {
+                localStorage.removeItem('solvedRiddles');
+                solvedRiddles = {};
+                updateCombinationDisplay();
+                loadRiddles();
+            }
+        }
+    </script>
+</body>
+</html>
