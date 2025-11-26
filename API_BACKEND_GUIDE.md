@@ -26,8 +26,10 @@ CREATE TABLE riddles (
     position INTEGER NOT NULL CHECK (position >= 1 AND position <= 3),
     week INTEGER,
     is_active INTEGER DEFAULT 0,
+    is_expired INTEGER DEFAULT 0,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     activated_at TEXT,
+    expired_at TEXT,
     notes TEXT
 );
 ```
@@ -39,9 +41,11 @@ Fields:
 - `digit`: The digit (0-9) revealed when solved
 - `position`: Which position in the 3-digit combination (1, 2, or 3)
 - `week`: Optional week number for organization
-- `is_active`: Boolean (0 or 1) - whether the riddle is visible to players
+- `is_active`: Boolean (0 or 1) - whether the riddle is currently active
+- `is_expired`: Boolean (0 or 1) - whether the riddle is expired (still visible but doesn't count toward score)
 - `created_at`: Timestamp when riddle was created
 - `activated_at`: Timestamp when riddle was activated
+- `expired_at`: Timestamp when riddle was expired
 - `notes`: Optional admin notes
 
 ## Required Endpoints
@@ -50,10 +54,10 @@ Add these endpoints to your `plumber.R` file:
 
 ### 1. GET /riddles/active (Public)
 
-Returns all currently active riddles (without answers).
+Returns all currently active and expired riddles (without answers).
 
 ```r
-#* Get active riddles
+#* Get active and expired riddles
 #* @get /riddles/active
 #* @serializer unboxedJSON
 #* @tag riddles
@@ -65,19 +69,27 @@ get_active_riddles <- function() {
     if (!dbExistsTable(conn = con, name = "riddles")) {
       return(list(
         status = "success",
-        riddles = list()
+        active_riddles = list(),
+        expired_riddles = list()
       ))
     }
 
-    # Get only active riddles, excluding the answer field
-    riddles <- dbGetQuery(
+    # Get active riddles (not expired), excluding the answer field
+    active_riddles <- dbGetQuery(
       con,
-      "SELECT id, riddle_text, position, week FROM riddles WHERE is_active = 1 ORDER BY position"
+      "SELECT id, riddle_text, position, week, is_expired FROM riddles WHERE is_active = 1 AND is_expired = 0 ORDER BY position"
+    )
+
+    # Get expired riddles, excluding the answer field
+    expired_riddles <- dbGetQuery(
+      con,
+      "SELECT id, riddle_text, position, week, is_expired FROM riddles WHERE is_active = 1 AND is_expired = 1 ORDER BY position"
     )
 
     return(list(
       status = "success",
-      riddles = riddles
+      active_riddles = active_riddles,
+      expired_riddles = expired_riddles
     ))
 
   }, error = function(e) {
@@ -116,7 +128,7 @@ check_riddle_answer <- function(riddle_id, answer) {
     # Get the riddle
     riddle <- dbGetQuery(
       con,
-      "SELECT id, answer, digit, position FROM riddles WHERE id = $1 AND is_active = 1",
+      "SELECT id, answer, digit, position, is_expired FROM riddles WHERE id = $1 AND is_active = 1",
       params = list(riddle_id)
     )
 
@@ -138,6 +150,7 @@ check_riddle_answer <- function(riddle_id, answer) {
         correct = TRUE,
         digit = riddle$digit,
         position = riddle$position,
+        is_expired = riddle$is_expired,
         message = "Correct!"
       ))
     } else {
@@ -224,8 +237,10 @@ submit_riddle <- function(riddle_text, answer, digit, position, auth_code, week 
             position INTEGER NOT NULL CHECK (position >= 1 AND position <= 3),
             week INTEGER,
             is_active INTEGER DEFAULT 0,
+            is_expired INTEGER DEFAULT 0,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             activated_at TEXT,
+            expired_at TEXT,
             notes TEXT
         )
       ")
@@ -399,7 +414,129 @@ deactivate_riddle <- function(riddle_id, auth_code) {
 }
 ```
 
-### 6. GET /riddles/all (Authenticated)
+### 6. POST /riddles/expire (Authenticated)
+
+Mark a riddle as expired. Expired riddles are still visible but don't count toward score.
+
+```r
+#* Mark a riddle as expired
+#* @param riddle_id The ID of the riddle to expire
+#* @param auth_code Authentication code
+#* @post /riddles/expire
+#* @serializer unboxedJSON
+#* @tag riddles
+expire_riddle <- function(riddle_id, auth_code) {
+  tryCatch({
+    # Validate auth code
+    source("antitrusties_creds.R")
+    if (is.null(auth_code) || auth_code != expected_code) {
+      return(list(
+        status = "error",
+        message = "Invalid authentication code"
+      ))
+    }
+
+    if (is.null(riddle_id) || riddle_id == "") {
+      return(list(
+        status = "error",
+        message = "Missing riddle_id"
+      ))
+    }
+
+    con <- dbConnect(RSQLite::SQLite(), "riddles.sqlite")
+    on.exit(dbDisconnect(con))
+
+    # Mark the riddle as expired
+    rows_affected <- dbExecute(
+      con,
+      "UPDATE riddles SET is_expired = 1, expired_at = $1 WHERE id = $2",
+      params = list(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), riddle_id)
+    )
+
+    if (rows_affected == 0) {
+      return(list(
+        status = "error",
+        message = "Riddle not found"
+      ))
+    }
+
+    return(list(
+      status = "success",
+      message = "Riddle marked as expired successfully"
+    ))
+
+  }, error = function(e) {
+    return(list(
+      status = "error",
+      message = paste("Error:", e$message)
+    ))
+  })
+}
+```
+
+### 7. POST /riddles/expire-week (Authenticated)
+
+Mark all riddles from a specific week as expired.
+
+```r
+#* Mark all riddles in a week as expired
+#* @param week The week number
+#* @param auth_code Authentication code
+#* @post /riddles/expire-week
+#* @serializer unboxedJSON
+#* @tag riddles
+expire_week <- function(week, auth_code) {
+  tryCatch({
+    # Validate auth code
+    source("antitrusties_creds.R")
+    if (is.null(auth_code) || auth_code != expected_code) {
+      return(list(
+        status = "error",
+        message = "Invalid authentication code"
+      ))
+    }
+
+    if (is.null(week) || week == "") {
+      return(list(
+        status = "error",
+        message = "Missing week parameter"
+      ))
+    }
+
+    week <- as.integer(week)
+    if (is.na(week)) {
+      return(list(
+        status = "error",
+        message = "Week must be a valid number"
+      ))
+    }
+
+    con <- dbConnect(RSQLite::SQLite(), "riddles.sqlite")
+    on.exit(dbDisconnect(con))
+
+    # Mark all riddles in the week as expired
+    rows_affected <- dbExecute(
+      con,
+      "UPDATE riddles SET is_expired = 1, expired_at = $1 WHERE week = $2",
+      params = list(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), week)
+    )
+
+    return(list(
+      status = "success",
+      message = paste("Marked", rows_affected, "riddle(s) from week", week, "as expired"),
+      riddles_affected = rows_affected
+    ))
+
+  }, error = function(e) {
+    return(list(
+      status = "error",
+      message = paste("Error:", e$message)
+    ))
+  })
+}
+```
+
+### 8. GET /riddles/all (Authenticated)
 
 Get all riddles including inactive ones (admin only).
 
