@@ -372,7 +372,7 @@
                         </div>
                         <div class="riddle-text">${riddle.riddle_text}</div>
                         ${!isSolved ? `
-                            <form class="answer-form" onsubmit="submitAnswer(event, ${riddle.id})">
+                            <form class="answer-form" onsubmit="submitAnswer(event, ${riddle.id}); return false;">
                                 <input
                                     type="text"
                                     class="answer-input"
