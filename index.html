@@ -378,7 +378,7 @@
                 <div class="digit-box" id="digit-2">?</div>
                 <div class="digit-box" id="digit-3">?</div>
             </div>
-            <div class="digit-label">Collect all 3 magic numbers to unlock your Christmas surprise!</div>
+            <div class="digit-label" id="digit-label">Solve the riddles to collect all 3 magic numbers!</div>
         </div>
 
         <div class="riddles-section">
@@ -452,6 +452,26 @@
         function loadWeekData() {
             const weekKey = `solvedRiddles_week${currentWeek}`;
             solvedRiddles = JSON.parse(localStorage.getItem(weekKey) || '{}');
+
+            // Backward compatibility: add 'revealed' property to existing data
+            const nonExpiredSolved = Object.values(solvedRiddles).filter(r => !r.expired);
+            if (nonExpiredSolved.length === 3) {
+                // If all 3 are found, mark them as revealed
+                Object.keys(solvedRiddles).forEach(key => {
+                    if (!solvedRiddles[key].expired && solvedRiddles[key].revealed === undefined) {
+                        solvedRiddles[key].revealed = true;
+                    }
+                });
+                saveWeekData();
+            } else {
+                // If not all found yet, ensure revealed is false
+                Object.keys(solvedRiddles).forEach(key => {
+                    if (!solvedRiddles[key].expired && solvedRiddles[key].revealed === undefined) {
+                        solvedRiddles[key].revealed = false;
+                    }
+                });
+                saveWeekData();
+            }
         }
 
         // Save week-specific data to localStorage
@@ -559,7 +579,7 @@
                             </form>
                             <div class="feedback" id="feedback-${riddle.id}"></div>
                         ` : `
-                            <div class="feedback success">${isExpired ? 'Correct! (Expired - no score)' : `Correct! You unlocked digit ${riddle.position}`}</div>
+                            <div class="feedback success">${isExpired ? 'Correct! (Expired - no score)' : (isSolved && solvedRiddles[riddle.id].revealed ? `Correct! You unlocked digit ${riddle.position}` : 'Correct! You found a digit!')}</div>
                         `}
                     </div>
                 `;
@@ -635,15 +655,33 @@
                         feedback.textContent = `Correct! (Expired - no score)`;
                     } else {
                         // Active riddle - add to score
-                        feedback.textContent = `Correct! You unlocked digit ${data.position}: ${data.digit}`;
+                        feedback.textContent = `Correct! You found the digit: ${data.digit}`;
 
-                        // Store solved riddle
+                        // Store solved riddle (not revealed until all 3 found)
                         solvedRiddles[riddleId] = {
                             digit: data.digit,
                             position: data.position,
-                            solvedAt: new Date().toISOString()
+                            solvedAt: new Date().toISOString(),
+                            revealed: false
                         };
                         saveWeekData();
+
+                        // Check if all 3 digits are now found
+                        const nonExpiredSolved = Object.values(solvedRiddles).filter(r => !r.expired);
+                        if (nonExpiredSolved.length === 3) {
+                            // Mark all as revealed
+                            Object.keys(solvedRiddles).forEach(key => {
+                                if (!solvedRiddles[key].expired) {
+                                    solvedRiddles[key].revealed = true;
+                                }
+                            });
+                            saveWeekData();
+
+                            // Show completion message
+                            setTimeout(() => {
+                                feedback.textContent = `🎄 Amazing! You've found all 3 digits! The positions are now revealed! 🎄`;
+                            }, 1000);
+                        }
 
                         // Update display
                         updateCombinationDisplay();
@@ -685,12 +723,15 @@
         function updateCombinationDisplay() {
             // Get all solved riddles sorted by position (excluding expired)
             const positions = [1, 2, 3];
+            const nonExpiredSolved = Object.values(solvedRiddles).filter(r => !r.expired);
+            const allRevealed = nonExpiredSolved.length === 3 && nonExpiredSolved.every(r => r.revealed);
 
             positions.forEach(position => {
                 const digitBox = document.getElementById(`digit-${position}`);
                 const solved = Object.values(solvedRiddles).find(r => r.position === position && !r.expired);
 
-                if (solved) {
+                // Only show the digit if all 3 are found and revealed
+                if (solved && allRevealed) {
                     digitBox.textContent = solved.digit;
                     digitBox.classList.add('unlocked');
                 } else {
@@ -699,9 +740,21 @@
                 }
             });
 
-            // Check if all digits are collected (only non-expired riddles)
-            const nonExpiredSolved = Object.values(solvedRiddles).filter(r => !r.expired);
-            if (nonExpiredSolved.length >= 3) {
+            // Update the label text based on progress
+            const label = document.getElementById('digit-label');
+            if (allRevealed) {
+                label.textContent = '🎄 You\'ve unlocked Santa\'s secret code! 🎄';
+            } else if (nonExpiredSolved.length > 0) {
+                label.textContent = `You've found ${nonExpiredSolved.length} of 3 digits! Keep solving to reveal their positions!`;
+            } else {
+                label.textContent = 'Solve the riddles to collect all 3 magic numbers!';
+            }
+
+            // Check if all digits are collected and revealed (show alert only once)
+            const weekKey = `alertShown_week${currentWeek}`;
+            const alertShown = localStorage.getItem(weekKey);
+            if (allRevealed && !alertShown) {
+                localStorage.setItem(weekKey, 'true');
                 setTimeout(() => {
                     alert('🎄🎅 Ho Ho Ho! Congratulations! You\'ve unlocked Santa\'s secret code! Merry Christmas! 🎁✨');
                 }, 500);
@@ -712,7 +765,9 @@
         function resetProgress() {
             if (confirm('Are you sure you want to reset your progress for the current week?')) {
                 const weekKey = `solvedRiddles_week${currentWeek}`;
+                const alertKey = `alertShown_week${currentWeek}`;
                 localStorage.removeItem(weekKey);
+                localStorage.removeItem(alertKey);
                 solvedRiddles = {};
                 updateCombinationDisplay();
                 loadRiddles();
@@ -724,6 +779,7 @@
             if (confirm('Are you sure you want to reset ALL progress for ALL weeks?')) {
                 for (let i = 1; i <= 4; i++) {
                     localStorage.removeItem(`solvedRiddles_week${i}`);
+                    localStorage.removeItem(`alertShown_week${i}`);
                 }
                 localStorage.removeItem('currentWeek');
                 solvedRiddles = {};
