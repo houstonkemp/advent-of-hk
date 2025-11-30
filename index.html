@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <title>🎄 Christmas Riddle Adventure</title>
+    <title>Advent of HoustonKemp | 2025</title>
     <style>
         * {
             margin: 0;
@@ -367,8 +367,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎄 Christmas Riddle Adventure 🎅</h1>
-            <p class="subtitle">Solve festive riddles to unlock Santa's secret combination!</p>
+            <h1>🎄 Advent of HoustonKemp | 2025 🎅</h1>
+            <p class="subtitle">Solve festive / economics riddles to unlock Santa's secret combination!</p>
         </header>
 
         <div class="combination-display">
@@ -378,35 +378,34 @@
                 <div class="digit-box" id="digit-2">?</div>
                 <div class="digit-box" id="digit-3">?</div>
             </div>
-            <div class="digit-label" id="digit-label">Solve the riddles to collect all 3 magic numbers!</div>
+            <div class="digit-label" id="digit-label">Solve the riddles to collect all 3 numbers and unlock the combination lock!</div>
         </div>
 
         <div class="riddles-section">
             <div class="week-selector">
-                <label for="week-select">Select Week:</label>
+                <label for="week-select">Select week:</label>
                 <select id="week-select" onchange="switchWeek()">
                     <option value="1">Week 1</option>
                     <option value="2">Week 2</option>
                     <option value="3">Week 3</option>
                 </select>
             </div>
-            <h2 class="riddles-title">🎅 Christmas Riddles 🎄</h2>
+            <h2 class="riddles-title">🎅 Riddles 🎄</h2>
             <div id="riddles-container">
                 <div class="loading">Loading riddles...</div>
             </div>
         </div>
 
         <div class="riddles-section" id="expired-section" style="display: none;">
-            <h2 class="riddles-title">⏰ Expired Riddles</h2>
+            <h2 class="riddles-title">⏰ Expired riddles</h2>
             <p style="color: #666; font-style: italic; margin-bottom: 15px;">
-                These riddles have expired but you can still test your knowledge!
-                Solving these won't add to your score.
+                These riddles have expired but you can still try to figure them out.
             </p>
             <div id="expired-riddles-container"></div>
         </div>
 
         <footer>
-            <p>🎄 Merry Christmas! May your holiday season be filled with joy and riddles! ❄️</p>
+            <p>🎄 Advent of HoustonKemp | 2025 ❄️</p>
         </footer>
     </div>
 
