@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <title>🎄 Christmas Riddle Management</title>
+    <title>Advent of HoustonKemp | 2025 | Admin</title>
     <style>
         * {
             margin: 0;
@@ -347,18 +347,18 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎅 Christmas Riddle Management 🎄</h1>
-            <p class="subtitle">Admin interface for the Christmas Riddle Adventure</p>
+            <h1>🎅 Advent of HoustonKemp | 2025 | Admin 🎄</h1>
+            <p class="subtitle">Admin interface for the Advent of HoustonKemp 2025</p>
         </header>
 
         <!-- Auth Section -->
         <div class="section auth-section">
             <div class="section-title">
                 Authentication
-                <span class="auth-status" id="auth-status">Not Configured</span>
+                <span class="auth-status" id="auth-status">Not configured</span>
             </div>
             <div class="form-group">
-                <label for="auth-code">Auth Code:</label>
+                <label for="auth-code">Auth code:</label>
                 <input
                     type="password"
                     id="auth-code"
@@ -366,8 +366,8 @@
                     autocomplete="off"
                 >
             </div>
-            <button class="btn" onclick="saveAuthCode()">Save Auth Code</button>
-            <button class="btn btn-secondary" onclick="clearAuthCode()">Clear Auth Code</button>
+            <button class="btn" onclick="saveAuthCode()">Save auth code</button>
+            <button class="btn btn-secondary" onclick="clearAuthCode()">Clear auth code</button>
             <div id="auth-feedback"></div>
         </div>
 
@@ -377,32 +377,32 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number" id="total-riddles">0</div>
-                    <div class="stat-label">Total Riddles</div>
+                    <div class="stat-label">Total riddles</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="active-riddles">0</div>
-                    <div class="stat-label">Active Riddles</div>
+                    <div class="stat-label">Active riddles</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="inactive-riddles">0</div>
-                    <div class="stat-label">Inactive Riddles</div>
+                    <div class="stat-label">Inactive riddles</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="expired-riddles">0</div>
-                    <div class="stat-label">Expired Riddles</div>
+                    <div class="stat-label">Expired riddles</div>
                 </div>
             </div>
         </div>
 
         <!-- Expire Week Section -->
         <div class="section hidden" id="expire-section">
-            <div class="section-title">Expire Riddles by Week</div>
+            <div class="section-title">Expire riddles by week</div>
             <p style="margin-bottom: 20px; color: #666;">
                 Mark all riddles from a specific week as expired. Expired riddles remain visible but don't count toward the score.
             </p>
             <div class="form-row">
                 <div class="form-group">
-                    <label for="expire-week">Week Number:</label>
+                    <label for="expire-week">Week number:</label>
                     <input
                         type="number"
                         id="expire-week"
@@ -411,16 +411,16 @@
                     >
                 </div>
             </div>
-            <button class="btn btn-danger" onclick="expireWeek()">Expire All Riddles in Week</button>
+            <button class="btn btn-danger" onclick="expireWeek()">Expire all Riddles in week</button>
             <div id="expire-feedback"></div>
         </div>
 
         <!-- Create Riddle Section -->
         <div class="section hidden" id="create-section">
-            <div class="section-title">Create New Riddle</div>
+            <div class="section-title">Create new riddle</div>
             <form onsubmit="submitRiddle(event)">
                 <div class="form-group">
-                    <label for="riddle-text">Riddle Text: *</label>
+                    <label for="riddle-text">Riddle text: *</label>
                     <textarea
                         id="riddle-text"
                         placeholder="Enter your riddle question..."
@@ -483,8 +483,8 @@
                     >
                 </div>
 
-                <button type="submit" class="btn" id="submit-riddle-btn">Create Riddle</button>
-                <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+                <button type="submit" class="btn" id="submit-riddle-btn">Create riddle</button>
+                <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear form</button>
             </form>
             <div id="create-feedback"></div>
         </div>
@@ -492,7 +492,7 @@
         <!-- View Riddles Section -->
         <div class="section hidden" id="riddles-section">
             <div class="section-title">
-                All Riddles
+                All riddles
                 <button class="btn btn-small" onclick="loadRiddles()">🔄 Refresh</button>
             </div>
             <div id="riddles-container">
