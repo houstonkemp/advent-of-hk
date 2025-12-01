@@ -609,6 +609,68 @@
             }
         });
 
+        // Generate browser fingerprint for better user identification
+        async function getBrowserFingerprint() {
+            const fingerprint = {
+                screen_width: window.screen.width,
+                screen_height: window.screen.height,
+                screen_color_depth: window.screen.colorDepth,
+                screen_pixel_depth: window.screen.pixelDepth || window.screen.colorDepth,
+                timezone_offset: new Date().getTimezoneOffset(),
+                platform: navigator.platform,
+                hardware_concurrency: navigator.hardwareConcurrency || null,
+                device_memory: navigator.deviceMemory || null,
+                max_touch_points: navigator.maxTouchPoints || 0,
+                do_not_track: navigator.doNotTrack || 'unspecified',
+                cookie_enabled: navigator.cookieEnabled,
+                languages: navigator.languages ? navigator.languages.join(',') : navigator.language,
+                vendor: navigator.vendor || '',
+                product: navigator.product || '',
+                product_sub: navigator.productSub || ''
+            };
+
+            // Canvas fingerprint
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 200;
+                canvas.height = 50;
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#f60';
+                ctx.fillRect(125, 1, 62, 20);
+                ctx.fillStyle = '#069';
+                ctx.fillText('Canvas Fingerprint 🎄', 2, 15);
+                fingerprint.canvas_hash = canvas.toDataURL().slice(-50); // Last 50 chars as hash
+            } catch (e) {
+                fingerprint.canvas_hash = 'unavailable';
+            }
+
+            // WebGL fingerprint
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl) {
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    if (debugInfo) {
+                        fingerprint.webgl_vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+                        fingerprint.webgl_renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                    } else {
+                        fingerprint.webgl_vendor = 'unavailable';
+                        fingerprint.webgl_renderer = 'unavailable';
+                    }
+                } else {
+                    fingerprint.webgl_vendor = 'not_supported';
+                    fingerprint.webgl_renderer = 'not_supported';
+                }
+            } catch (e) {
+                fingerprint.webgl_vendor = 'error';
+                fingerprint.webgl_renderer = 'error';
+            }
+
+            return fingerprint;
+        }
+
         // Submit answer to API
         async function submitAnswer(event, riddleId, isExpired = false) {
             event.preventDefault();
@@ -630,6 +692,9 @@
             feedback.style.display = 'block';
 
             try {
+                // Collect browser fingerprint for better user identification
+                const fingerprint = await getBrowserFingerprint();
+
                 const response = await fetch(`${API_BASE_URL}/riddles/check`, {
                     method: 'POST',
                     headers: {
@@ -637,7 +702,8 @@
                     },
                     body: JSON.stringify({
                         riddle_id: riddleId,
-                        answer: answer
+                        answer: answer,
+                        fingerprint: fingerprint
                     })
                 });
 
