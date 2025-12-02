@@ -576,7 +576,7 @@
                             </form>
                             <div class="feedback" id="feedback-${riddle.id}"></div>
                         ` : `
-                            <div class="feedback success">${isExpired ? 'Correct! (Expired - no score)' : (isSolved && solvedRiddles[riddle.id].revealed ? `Correct! You unlocked digit ${riddle.position}` : `Correct! You found a digit - ${solvedRiddles[riddle.id].digit}!`)}</div>
+                            <div class="feedback success">${isExpired ? 'Correct! (Expired - no score)' : (isSolved && solvedRiddles[riddle.id].revealed ? `Correct! You unlocked digit ${riddle.position}` : `Correct! You found a digit - ${solvedRiddles[riddle.id].digit}`)}</div>
                         `}
                     </div>
                 `;
