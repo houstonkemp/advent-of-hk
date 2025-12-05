@@ -322,7 +322,7 @@
             }
         }
 
-.snowflake:nth-child(21) { left: 10%; animation-duration: 2s; animation-delay: 0s; }
+        .snowflake:nth-child(21) { left: 10%; animation-duration: 2s; animation-delay: 0s; }
         .snowflake:nth-child(2) { left: 20%; animation-duration: 2.4s; animation-delay: 0.2s; font-size: 1.2em; }
         .snowflake:nth-child(3) { left: 30%; animation-duration: 1.6s; animation-delay: 0.4s; font-size: 1.8em; }
         .snowflake:nth-child(4) { left: 40%; animation-duration: 2.8s; animation-delay: 0.1s; }
@@ -342,7 +342,261 @@
         .snowflake:nth-child(18) { left: 5%; animation-duration: 2s; animation-delay: 0.28s; }
         .snowflake:nth-child(19) { left: 95%; animation-duration: 2.6s; animation-delay: 0.18s; font-size: 1.6em; }
         .snowflake:nth-child(20) { left: 50%; animation-duration: 1.8s; animation-delay: 0.44s; }
-        
+
+        /* Sudoku Overlay Styles */
+        .sudoku-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a472a 0%, #0d2818 50%, #8B0000 100%);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sudoku-overlay.active {
+            display: flex;
+        }
+
+        .sudoku-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 100px rgba(212, 175, 55, 0.3);
+            max-width: 500px;
+            width: 100%;
+            animation: sudokuAppear 0.6s ease-out;
+        }
+
+        @keyframes sudokuAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) rotateX(10deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotateX(0);
+            }
+        }
+
+        .sudoku-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .sudoku-header h2 {
+            color: #c41e3a;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .sudoku-header p {
+            color: #666;
+            font-size: 1em;
+        }
+
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 2px;
+            background: #333;
+            padding: 3px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .sudoku-cell {
+            aspect-ratio: 1;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+            position: relative;
+        }
+
+        .sudoku-cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #0f4c20;
+            outline: none;
+            caret-color: #c41e3a;
+        }
+
+        .sudoku-cell input:focus {
+            background: rgba(212, 175, 55, 0.2);
+        }
+
+        .sudoku-cell.given {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .sudoku-cell.highlight {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4a 100%);
+            animation: highlightPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes highlightPulse {
+            0%, 100% { box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.5); }
+            50% { box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.8); }
+        }
+
+        .sudoku-cell.error {
+            background: #ffcccc;
+        }
+
+        .sudoku-cell.error input {
+            color: #c41e3a;
+        }
+
+        /* Box borders for 6x6 (2 rows x 3 cols per box) */
+        .sudoku-cell:nth-child(3n) {
+            border-right: 3px solid #333;
+        }
+        .sudoku-cell:nth-child(6n) {
+            border-right: none;
+        }
+        .sudoku-cell:nth-child(n+7):nth-child(-n+12) {
+            border-bottom: 3px solid #333;
+        }
+        .sudoku-cell:nth-child(n+19):nth-child(-n+24) {
+            border-bottom: 3px solid #333;
+        }
+
+        .sudoku-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .sudoku-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sudoku-btn.primary {
+            background: linear-gradient(135deg, #c41e3a 0%, #8B0000 100%);
+            color: white;
+        }
+
+        .sudoku-btn.secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .sudoku-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .sudoku-message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .sudoku-message.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .sudoku-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .code-reveal {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #0f4c20 0%, #1a5c30 100%);
+            border-radius: 12px;
+            display: none;
+        }
+
+        .code-reveal.active {
+            display: block;
+            animation: codeReveal 0.8s ease-out;
+        }
+
+        @keyframes codeReveal {
+            0% { opacity: 0; transform: scale(0.9); }
+            50% { transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .code-reveal h3 {
+            color: #ffd700;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+
+        .code-digits {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .code-digit {
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4a 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #8B0000;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .close-sudoku {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 2em;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .close-sudoku:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
         @media (max-width: 600px) {
             h1 {
                 font-size: 2em;
@@ -360,6 +614,18 @@
 
             .submit-btn {
                 width: 100%;
+            }
+
+            .sudoku-container {
+                padding: 15px;
+            }
+
+            .sudoku-cell {
+                font-size: 1.4em;
+            }
+
+            .sudoku-cell input {
+                font-size: 1.4em;
             }
         }
     </style>
@@ -409,6 +675,32 @@
         </footer>
     </div>
 
+    <!-- Sudoku Overlay for Week 2 -->
+    <div class="sudoku-overlay" id="sudoku-overlay">
+        <button class="close-sudoku" onclick="closeSudoku()">×</button>
+        <div class="sudoku-container">
+            <div class="sudoku-header">
+                <h2>🎄 Santa's Sudoku Challenge 🎅</h2>
+                <p>Complete the 6×6 puzzle to reveal the secret code!</p>
+                <p style="font-size: 0.85em; color: #888; margin-top: 5px;">Use digits 1-6 only</p>
+            </div>
+            <div class="sudoku-grid" id="sudoku-grid">
+                <!-- Grid cells will be generated by JS -->
+            </div>
+            <div class="sudoku-actions">
+                <button class="sudoku-btn primary" onclick="checkSudoku()">Check Solution</button>
+                <button class="sudoku-btn secondary" onclick="resetSudoku()">Reset</button>
+            </div>
+            <div class="sudoku-message" id="sudoku-message"></div>
+            <div class="code-reveal" id="code-reveal">
+                <h3>🎁 The Secret Code Is:</h3>
+                <div class="code-digits" id="code-digits">
+                    <!-- Will be populated when solved -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Snowflakes -->
     <div class="snowflake">❄</div>
     <div class="snowflake">❅</div>
@@ -437,24 +729,256 @@
         let currentWeek = parseInt(localStorage.getItem('currentWeek') || '1');
         let solvedRiddles = {};
 
+        // Week 2 Sudoku Configuration
+        const SUDOKU_INITIAL = [
+            [0, 3, 0, 4, 0, 0],
+            [0, 0, 5, 6, 0, 3],
+            [0, 0, 0, 1, 0, 0],
+            [0, 1, 0, 3, 0, 5],
+            [0, 6, 4, 0, 3, 1],
+            [0, 0, 1, 0, 4, 6]
+        ];
+
+        const SUDOKU_SOLUTION = [
+            [1, 3, 6, 4, 5, 2],
+            [2, 4, 5, 6, 1, 3],
+            [6, 5, 3, 1, 2, 4],
+            [4, 1, 2, 3, 6, 5],
+            [5, 6, 4, 2, 3, 1],
+            [3, 2, 1, 5, 4, 6]
+        ];
+
+        // Cells to highlight (0-indexed): bottom row, positions 2, 3, 4 (values: 1, 5, 4)
+        const HIGHLIGHT_CELLS = [
+            { row: 5, col: 2 },
+            { row: 5, col: 3 },
+            { row: 5, col: 4 }
+        ];
+
+        let sudokuState = JSON.parse(JSON.stringify(SUDOKU_INITIAL));
+        let sudokuSolved = localStorage.getItem('sudokuSolved_week2') === 'true';
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            // Load the current week
             document.getElementById('week-select').value = currentWeek;
             loadWeekData();
             loadRiddles();
             updateCombinationDisplay();
+            initSudokuGrid();
         });
+
+        // Initialize the sudoku grid
+        function initSudokuGrid() {
+            const grid = document.getElementById('sudoku-grid');
+            grid.innerHTML = '';
+
+            for (let row = 0; row < 6; row++) {
+                for (let col = 0; col < 6; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'sudoku-cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+
+                    const initialValue = SUDOKU_INITIAL[row][col];
+
+                    if (initialValue !== 0) {
+                        cell.classList.add('given');
+                        cell.textContent = initialValue;
+                    } else {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.maxLength = 1;
+                        input.dataset.row = row;
+                        input.dataset.col = col;
+                        input.addEventListener('input', handleSudokuInput);
+                        input.addEventListener('keydown', handleSudokuKeydown);
+                        cell.appendChild(input);
+                    }
+
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        // Handle sudoku input
+        function handleSudokuInput(e) {
+            const input = e.target;
+            const value = input.value;
+
+            // Only allow digits 1-6
+            if (value && (!/^[1-6]$/.test(value))) {
+                input.value = '';
+                return;
+            }
+
+            const row = parseInt(input.dataset.row);
+            const col = parseInt(input.dataset.col);
+            sudokuState[row][col] = value ? parseInt(value) : 0;
+
+            // Clear error state
+            input.parentElement.classList.remove('error');
+
+            // Hide message when user starts typing again
+            document.getElementById('sudoku-message').className = 'sudoku-message';
+        }
+
+        // Handle keyboard navigation in sudoku
+        function handleSudokuKeydown(e) {
+            const input = e.target;
+            const row = parseInt(input.dataset.row);
+            const col = parseInt(input.dataset.col);
+
+            let newRow = row, newCol = col;
+
+            switch(e.key) {
+                case 'ArrowUp': newRow = Math.max(0, row - 1); break;
+                case 'ArrowDown': newRow = Math.min(5, row + 1); break;
+                case 'ArrowLeft': newCol = Math.max(0, col - 1); break;
+                case 'ArrowRight': newCol = Math.min(5, col + 1); break;
+                default: return;
+            }
+
+            e.preventDefault();
+            const nextCell = document.querySelector(`.sudoku-cell[data-row="${newRow}"][data-col="${newCol}"]`);
+            if (nextCell) {
+                const nextInput = nextCell.querySelector('input');
+                if (nextInput) {
+                    nextInput.focus();
+                } else {
+                    // Skip given cells
+                    const fakeEvent = { target: { dataset: { row: newRow, col: newCol } }, key: e.key, preventDefault: () => {} };
+                    handleSudokuKeydown(fakeEvent);
+                }
+            }
+        }
+
+        // Check sudoku solution
+        function checkSudoku() {
+            const message = document.getElementById('sudoku-message');
+            let isComplete = true;
+            let isCorrect = true;
+
+            // Clear all error states
+            document.querySelectorAll('.sudoku-cell').forEach(cell => {
+                cell.classList.remove('error', 'highlight');
+            });
+
+            // Check each cell
+            for (let row = 0; row < 6; row++) {
+                for (let col = 0; col < 6; col++) {
+                    const value = sudokuState[row][col];
+                    const expected = SUDOKU_SOLUTION[row][col];
+
+                    if (value === 0) {
+                        isComplete = false;
+                    } else if (value !== expected) {
+                        isCorrect = false;
+                        const cell = document.querySelector(`.sudoku-cell[data-row="${row}"][data-col="${col}"]`);
+                        cell.classList.add('error');
+                    }
+                }
+            }
+
+            if (!isComplete) {
+                message.textContent = 'Please fill in all cells before checking!';
+                message.className = 'sudoku-message error';
+            } else if (!isCorrect) {
+                message.textContent = 'Some numbers are incorrect. Keep trying!';
+                message.className = 'sudoku-message error';
+            } else {
+                // Success!
+                message.textContent = '🎄 Congratulations! You solved it! 🎄';
+                message.className = 'sudoku-message success';
+
+                // Highlight the code cells
+                HIGHLIGHT_CELLS.forEach(({ row, col }) => {
+                    const cell = document.querySelector(`.sudoku-cell[data-row="${row}"][data-col="${col}"]`);
+                    cell.classList.add('highlight');
+                });
+
+                // Show the code reveal
+                const codeReveal = document.getElementById('code-reveal');
+                const codeDigits = document.getElementById('code-digits');
+                codeDigits.innerHTML = HIGHLIGHT_CELLS.map(({ row, col }) =>
+                    `<div class="code-digit">${SUDOKU_SOLUTION[row][col]}</div>`
+                ).join('');
+                codeReveal.classList.add('active');
+
+                // Mark as solved
+                sudokuSolved = true;
+                localStorage.setItem('sudokuSolved_week2', 'true');
+
+                // Update main display
+                updateCombinationDisplay();
+            }
+        }
+
+        // Reset sudoku
+        function resetSudoku() {
+            sudokuState = JSON.parse(JSON.stringify(SUDOKU_INITIAL));
+
+            document.querySelectorAll('.sudoku-cell').forEach(cell => {
+                cell.classList.remove('error', 'highlight');
+                const input = cell.querySelector('input');
+                if (input) {
+                    input.value = '';
+                }
+            });
+
+            document.getElementById('sudoku-message').className = 'sudoku-message';
+            document.getElementById('code-reveal').classList.remove('active');
+        }
+
+        // Open sudoku overlay
+        function openSudoku() {
+            document.getElementById('sudoku-overlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // If already solved, show the solution
+            if (sudokuSolved) {
+                // Fill in the grid with correct values
+                for (let row = 0; row < 6; row++) {
+                    for (let col = 0; col < 6; col++) {
+                        const cell = document.querySelector(`.sudoku-cell[data-row="${row}"][data-col="${col}"]`);
+                        const input = cell.querySelector('input');
+                        if (input) {
+                            input.value = SUDOKU_SOLUTION[row][col];
+                            sudokuState[row][col] = SUDOKU_SOLUTION[row][col];
+                        }
+                    }
+                }
+
+                // Highlight and show code
+                HIGHLIGHT_CELLS.forEach(({ row, col }) => {
+                    const cell = document.querySelector(`.sudoku-cell[data-row="${row}"][data-col="${col}"]`);
+                    cell.classList.add('highlight');
+                });
+
+                const codeReveal = document.getElementById('code-reveal');
+                const codeDigits = document.getElementById('code-digits');
+                codeDigits.innerHTML = HIGHLIGHT_CELLS.map(({ row, col }) =>
+                    `<div class="code-digit">${SUDOKU_SOLUTION[row][col]}</div>`
+                ).join('');
+                codeReveal.classList.add('active');
+
+                document.getElementById('sudoku-message').textContent = '🎄 You already solved this! 🎄';
+                document.getElementById('sudoku-message').className = 'sudoku-message success';
+            }
+        }
+
+        // Close sudoku overlay
+        function closeSudoku() {
+            document.getElementById('sudoku-overlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
 
         // Load week-specific data from localStorage
         function loadWeekData() {
             const weekKey = `solvedRiddles_week${currentWeek}`;
             solvedRiddles = JSON.parse(localStorage.getItem(weekKey) || '{}');
 
-            // Backward compatibility: add 'revealed' property to existing data
             const nonExpiredSolved = Object.values(solvedRiddles).filter(r => !r.expired);
             if (nonExpiredSolved.length === 3) {
-                // If all 3 are found, mark them as revealed
                 Object.keys(solvedRiddles).forEach(key => {
                     if (!solvedRiddles[key].expired && solvedRiddles[key].revealed === undefined) {
                         solvedRiddles[key].revealed = true;
@@ -462,7 +986,6 @@
                 });
                 saveWeekData();
             } else {
-                // If not all found yet, ensure revealed is false
                 Object.keys(solvedRiddles).forEach(key => {
                     if (!solvedRiddles[key].expired && solvedRiddles[key].revealed === undefined) {
                         solvedRiddles[key].revealed = false;
@@ -506,7 +1029,6 @@
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    // Filter riddles by current week
                     const activeRiddles = (data.active_riddles || data.riddles || [])
                         .filter(r => !r.week || r.week == currentWeek);
                     const expiredRiddles = (data.expired_riddles || [])
@@ -514,14 +1036,12 @@
 
                     riddlesData = { active: activeRiddles, expired: expiredRiddles };
 
-                    // Display active riddles
                     if (activeRiddles.length > 0) {
                         displayRiddles(activeRiddles, container, false);
                     } else {
                         container.innerHTML = '<div class="no-riddles">🎅 No active riddles for this week yet!</div>';
                     }
 
-                    // Display expired riddles
                     if (expiredRiddles.length > 0) {
                         displayRiddles(expiredRiddles, expiredContainer, true);
                         expiredSection.style.display = 'block';
@@ -585,7 +1105,6 @@
 
         // Set up event delegation for form submissions
         document.getElementById('riddles-container').addEventListener('submit', function(event) {
-            // Check if the submitted element is an answer form
             if (event.target.classList.contains('answer-form')) {
                 event.preventDefault();
                 const riddleId = event.target.getAttribute('data-riddle-id');
@@ -596,9 +1115,7 @@
             }
         });
 
-        // Set up event delegation for expired riddles form submissions
         document.getElementById('expired-riddles-container').addEventListener('submit', function(event) {
-            // Check if the submitted element is an answer form
             if (event.target.classList.contains('answer-form')) {
                 event.preventDefault();
                 const riddleId = event.target.getAttribute('data-riddle-id');
@@ -609,7 +1126,7 @@
             }
         });
 
-        // Generate browser fingerprint for better user identification
+        // Generate browser fingerprint
         async function getBrowserFingerprint() {
             const fingerprint = {
                 screen_width: window.screen.width,
@@ -629,7 +1146,6 @@
                 product_sub: navigator.productSub || ''
             };
 
-            // Canvas fingerprint
             try {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
@@ -641,12 +1157,11 @@
                 ctx.fillRect(125, 1, 62, 20);
                 ctx.fillStyle = '#069';
                 ctx.fillText('Canvas Fingerprint 🎄', 2, 15);
-                fingerprint.canvas_hash = canvas.toDataURL().slice(-50); // Last 50 chars as hash
+                fingerprint.canvas_hash = canvas.toDataURL().slice(-50);
             } catch (e) {
                 fingerprint.canvas_hash = 'unavailable';
             }
 
-            // WebGL fingerprint
             try {
                 const canvas = document.createElement('canvas');
                 const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -685,14 +1200,12 @@
                 return;
             }
 
-            // Disable submit button during request
             submitBtn.disabled = true;
             feedback.className = 'feedback';
             feedback.textContent = 'Checking...';
             feedback.style.display = 'block';
 
             try {
-                // Collect browser fingerprint for better user identification
                 const fingerprint = await getBrowserFingerprint();
 
                 const response = await fetch(`${API_BASE_URL}/riddles/check`, {
@@ -710,17 +1223,13 @@
                 const data = await response.json();
 
                 if (data.status === 'success' && data.correct) {
-                    // Correct answer!
                     feedback.className = 'feedback success';
 
                     if (isExpired || data.is_expired) {
-                        // Expired riddle - don't add to score
                         feedback.textContent = `Correct! (Expired - no score)`;
                     } else {
-                        // Active riddle - add to score
                         feedback.textContent = `Correct! You found the digit: ${data.digit}`;
 
-                        // Store solved riddle (not revealed until all 3 found)
                         solvedRiddles[riddleId] = {
                             digit: data.digit,
                             position: data.position,
@@ -729,10 +1238,8 @@
                         };
                         saveWeekData();
 
-                        // Check if all 3 digits are now found
                         const nonExpiredSolved = Object.values(solvedRiddles).filter(r => !r.expired);
                         if (nonExpiredSolved.length === 3) {
-                            // Mark all as revealed
                             Object.keys(solvedRiddles).forEach(key => {
                                 if (!solvedRiddles[key].expired) {
                                     solvedRiddles[key].revealed = true;
@@ -740,17 +1247,22 @@
                             });
                             saveWeekData();
 
-                            // Show completion message
-                            setTimeout(() => {
-                                feedback.textContent = `🎄 Amazing! You've found all 3 digits! The positions are now revealed! 🎄`;
-                            }, 1000);
+                            // Week 2 special: Open sudoku instead of revealing digits
+                            if (currentWeek === 2) {
+                                setTimeout(() => {
+                                    feedback.textContent = `🎄 All riddles solved! But you now need to solve this Sudoku puzzle! 🎄`;
+                                    openSudoku();
+                                }, 1000);
+                            } else {
+                                setTimeout(() => {
+                                    feedback.textContent = `🎄 Amazing! You've found all 3 digits! The positions are now revealed! 🎄`;
+                                }, 1000);
+                            }
                         }
 
-                        // Update display
                         updateCombinationDisplay();
                     }
 
-                    // Mark as solved even if expired
                     if (isExpired || data.is_expired) {
                         solvedRiddles[riddleId] = {
                             digit: data.digit,
@@ -761,13 +1273,11 @@
                         saveWeekData();
                     }
 
-                    // Refresh riddles display after a moment
                     setTimeout(() => {
                         loadRiddles();
                     }, 1500);
 
                 } else {
-                    // Incorrect answer
                     feedback.className = 'feedback error';
                     feedback.textContent = data.message || 'Incorrect. Try again!';
                     submitBtn.disabled = false;
@@ -784,60 +1294,104 @@
 
         // Update the combination display
         function updateCombinationDisplay() {
-            // Get all solved riddles sorted by position (excluding expired)
             const positions = [1, 2, 3];
             const nonExpiredSolved = Object.values(solvedRiddles).filter(r => !r.expired);
-            const allRevealed = nonExpiredSolved.length === 3 && nonExpiredSolved.every(r => r.revealed);
 
-            positions.forEach(position => {
-                const digitBox = document.getElementById(`digit-${position}`);
-                const solved = Object.values(solvedRiddles).find(r => r.position === position && !r.expired);
+            // Week 2 special handling
+            if (currentWeek === 2) {
+                const allRiddlesSolved = nonExpiredSolved.length === 3;
 
-                // Only show the digit if all 3 are found and revealed
-                if (solved && allRevealed) {
-                    digitBox.textContent = solved.digit;
-                    digitBox.classList.add('unlocked');
+                positions.forEach((position, index) => {
+                    const digitBox = document.getElementById(`digit-${position}`);
+
+                    if (allRiddlesSolved && sudokuSolved) {
+                        // Show the sudoku code digits
+                        const sudokuDigits = HIGHLIGHT_CELLS.map(({ row, col }) => SUDOKU_SOLUTION[row][col]);
+                        digitBox.textContent = sudokuDigits[index];
+                        digitBox.classList.add('unlocked');
+                    } else {
+                        digitBox.textContent = '?';
+                        digitBox.classList.remove('unlocked');
+                    }
+                });
+
+                const label = document.getElementById('digit-label');
+                if (allRiddlesSolved && sudokuSolved) {
+                    label.innerHTML = '🎄 You\'ve unlocked Santa\'s secret code! 🎄';
+                } else if (allRiddlesSolved) {
+                    label.innerHTML = 'All riddles solved! <a href="javascript:openSudoku()" style="color: #c41e3a; font-weight: bold;">Click here to solve the Sudoku puzzle!</a>';
+                } else if (nonExpiredSolved.length > 0) {
+                    label.textContent = `You've found ${nonExpiredSolved.length} of 3 digits! Keep solving!`;
                 } else {
-                    digitBox.textContent = '?';
-                    digitBox.classList.remove('unlocked');
+                    label.textContent = 'Solve the riddles to collect all 3 magic numbers!';
                 }
-            });
 
-            // Update the label text based on progress
-            const label = document.getElementById('digit-label');
-            if (allRevealed) {
-                label.textContent = '🎄 You\'ve unlocked Santa\'s secret code! 🎄';
-            } else if (nonExpiredSolved.length > 0) {
-                label.textContent = `You've found ${nonExpiredSolved.length} of 3 digits! Keep solving to reveal their positions!`;
+                // Alert for week 2
+                const weekKey = `alertShown_week${currentWeek}`;
+                const alertShown = localStorage.getItem(weekKey);
+                if (allRiddlesSolved && sudokuSolved && !alertShown) {
+                    localStorage.setItem(weekKey, 'true');
+                    setTimeout(() => {
+                        alert('🎄🎅 Ho Ho Ho! Congratulations! You\'ve unlocked Santa\'s secret code! Merry Christmas! 🎁✨');
+                    }, 500);
+                }
+
             } else {
-                label.textContent = 'Solve the riddles to collect all 3 magic numbers!';
-            }
+                // Standard week behavior
+                const allRevealed = nonExpiredSolved.length === 3 && nonExpiredSolved.every(r => r.revealed);
 
-            // Check if all digits are collected and revealed (show alert only once)
-            const weekKey = `alertShown_week${currentWeek}`;
-            const alertShown = localStorage.getItem(weekKey);
-            if (allRevealed && !alertShown) {
-                localStorage.setItem(weekKey, 'true');
-                setTimeout(() => {
-                    alert('🎄🎅 Ho Ho Ho! Congratulations! You\'ve unlocked Santa\'s secret code! Merry Christmas! 🎁✨');
-                }, 500);
+                positions.forEach(position => {
+                    const digitBox = document.getElementById(`digit-${position}`);
+                    const solved = Object.values(solvedRiddles).find(r => r.position === position && !r.expired);
+
+                    if (solved && allRevealed) {
+                        digitBox.textContent = solved.digit;
+                        digitBox.classList.add('unlocked');
+                    } else {
+                        digitBox.textContent = '?';
+                        digitBox.classList.remove('unlocked');
+                    }
+                });
+
+                const label = document.getElementById('digit-label');
+                if (allRevealed) {
+                    label.textContent = '🎄 You\'ve unlocked Santa\'s secret code! 🎄';
+                } else if (nonExpiredSolved.length > 0) {
+                    label.textContent = `You've found ${nonExpiredSolved.length} of 3 digits! Keep solving to reveal their positions!`;
+                } else {
+                    label.textContent = 'Solve the riddles to collect all 3 magic numbers!';
+                }
+
+                const weekKey = `alertShown_week${currentWeek}`;
+                const alertShown = localStorage.getItem(weekKey);
+                if (allRevealed && !alertShown) {
+                    localStorage.setItem(weekKey, 'true');
+                    setTimeout(() => {
+                        alert('🎄🎅 Ho Ho Ho! Congratulations! You\'ve unlocked Santa\'s secret code! Merry Christmas! 🎁✨');
+                    }, 500);
+                }
             }
         }
 
-        // Reset function (for testing - can be called from console)
+        // Reset function (for testing)
         function resetProgress() {
             if (confirm('Are you sure you want to reset your progress for the current week?')) {
                 const weekKey = `solvedRiddles_week${currentWeek}`;
                 const alertKey = `alertShown_week${currentWeek}`;
                 localStorage.removeItem(weekKey);
                 localStorage.removeItem(alertKey);
+                if (currentWeek === 2) {
+                    localStorage.removeItem('sudokuSolved_week2');
+                    sudokuSolved = false;
+                    resetSudoku();
+                }
                 solvedRiddles = {};
                 updateCombinationDisplay();
                 loadRiddles();
             }
         }
 
-        // Reset all weeks (for testing - can be called from console)
+        // Reset all weeks (for testing)
         function resetAllProgress() {
             if (confirm('Are you sure you want to reset ALL progress for ALL weeks?')) {
                 for (let i = 1; i <= 4; i++) {
@@ -845,6 +1399,9 @@
                     localStorage.removeItem(`alertShown_week${i}`);
                 }
                 localStorage.removeItem('currentWeek');
+                localStorage.removeItem('sudokuSolved_week2');
+                sudokuSolved = false;
+                resetSudoku();
                 solvedRiddles = {};
                 currentWeek = 1;
                 document.getElementById('week-select').value = 1;
