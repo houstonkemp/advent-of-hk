@@ -244,6 +244,16 @@
             color: white;
         }
 
+        .badge-correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -284,6 +294,56 @@
         .stat-label {
             color: #666;
             margin-top: 5px;
+        }
+
+        .refresh-indicator {
+            font-size: 0.8em;
+            color: #666;
+            font-weight: normal;
+        }
+
+        .submissions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        .submissions-table th,
+        .submissions-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .submissions-table th {
+            background: #fff9f0;
+            color: #c41e3a;
+            font-weight: 600;
+        }
+
+        .submissions-table tr:hover {
+            background: #fff9f0;
+        }
+
+        .submissions-table tr.correct {
+            background: #f0fff0;
+        }
+
+        .submissions-table tr.incorrect {
+            background: #fff8f8;
+        }
+
+        .answer-text {
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .time-ago {
+            color: #888;
+            font-size: 0.85em;
         }
 
         /* Snowflake Animation */
@@ -334,8 +394,9 @@
                 grid-template-columns: 1fr;
             }
 
-            .riddles-table {
-                font-size: 0.9em;
+            .riddles-table,
+            .submissions-table {
+                font-size: 0.85em;
             }
 
             .action-buttons {
@@ -391,6 +452,38 @@
                     <div class="stat-number" id="expired-riddles">0</div>
                     <div class="stat-label">Expired riddles</div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Submissions Section -->
+        <div class="section hidden" id="submissions-section">
+            <div class="section-title">
+                Recent submissions
+                <span>
+                    <span class="refresh-indicator" id="submissions-refresh-indicator">Auto-refresh: 30s</span>
+                    <button class="btn btn-small" onclick="loadSubmissions()">🔄 Refresh</button>
+                </span>
+            </div>
+            <div class="stats-grid" id="submissions-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-submissions">0</div>
+                    <div class="stat-label">Total submissions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="correct-submissions">0</div>
+                    <div class="stat-label">Correct</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="unique-ips">0</div>
+                    <div class="stat-label">Unique IPs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="unique-agents">0</div>
+                    <div class="stat-label">Unique browsers</div>
+                </div>
+            </div>
+            <div id="submissions-container">
+                <div class="loading">Loading submissions...</div>
             </div>
         </div>
 
@@ -527,6 +620,7 @@
         const API_BASE_URL = 'https://cardioid.co.nz/api';
         let authCode = localStorage.getItem('riddle_admin_auth') || '';
         let allRiddles = [];
+        let submissionsRefreshInterval = null;
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -534,6 +628,8 @@
                 document.getElementById('auth-code').value = authCode;
                 updateAuthStatus(true);
                 loadRiddles();
+                loadSubmissions();
+                startSubmissionsRefresh();
             } else {
                 updateAuthStatus(false);
             }
@@ -546,6 +642,7 @@
             const riddlesSection = document.getElementById('riddles-section');
             const statsSection = document.getElementById('stats-section');
             const expireSection = document.getElementById('expire-section');
+            const submissionsSection = document.getElementById('submissions-section');
 
             if (isAuthenticated) {
                 statusEl.textContent = '✓ Configured';
@@ -554,6 +651,7 @@
                 riddlesSection.classList.remove('hidden');
                 statsSection.classList.remove('hidden');
                 expireSection.classList.remove('hidden');
+                submissionsSection.classList.remove('hidden');
             } else {
                 statusEl.textContent = '✗ Not Configured';
                 statusEl.className = 'auth-status inactive';
@@ -561,6 +659,7 @@
                 riddlesSection.classList.add('hidden');
                 statsSection.classList.add('hidden');
                 expireSection.classList.add('hidden');
+                submissionsSection.classList.add('hidden');
             }
         }
 
@@ -584,6 +683,8 @@
             }, 3000);
 
             loadRiddles();
+            loadSubmissions();
+            startSubmissionsRefresh();
         }
 
         // Clear auth code
@@ -593,6 +694,7 @@
                 localStorage.removeItem('riddle_admin_auth');
                 document.getElementById('auth-code').value = '';
                 updateAuthStatus(false);
+                stopSubmissionsRefresh();
 
                 const feedbackEl = document.getElementById('auth-feedback');
                 feedbackEl.innerHTML = '<div class="alert alert-info">Auth code cleared</div>';
@@ -600,6 +702,155 @@
                     feedbackEl.innerHTML = '';
                 }, 3000);
             }
+        }
+
+        // Start auto-refresh for submissions
+        function startSubmissionsRefresh() {
+            stopSubmissionsRefresh();
+            submissionsRefreshInterval = setInterval(() => {
+                loadSubmissions();
+            }, 30000); // 30 seconds
+        }
+
+        // Stop auto-refresh for submissions
+        function stopSubmissionsRefresh() {
+            if (submissionsRefreshInterval) {
+                clearInterval(submissionsRefreshInterval);
+                submissionsRefreshInterval = null;
+            }
+        }
+
+        // Load submissions
+        async function loadSubmissions() {
+            if (!authCode) {
+                return;
+            }
+
+            const container = document.getElementById('submissions-container');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/riddles/submissions?auth_code=${encodeURIComponent(authCode)}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    displaySubmissions(data.submissions || []);
+                    updateSubmissionStats(data.stats?.[0] || {});
+                } else {
+                    container.innerHTML = `<div class="alert alert-error">Error: ${data.message}</div>`;
+                }
+            } catch (error) {
+                console.error('Error loading submissions:', error);
+                container.innerHTML = '<div class="alert alert-error">Error loading submissions. Check console for details.</div>';
+            }
+        }
+
+        // Display submissions in table
+        function displaySubmissions(submissions) {
+            const container = document.getElementById('submissions-container');
+
+            if (submissions.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No submissions yet.</div>';
+                return;
+            }
+
+            // Sort by submitted_at descending (most recent first)
+            submissions.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+
+            // Show only most recent 50
+            const recentSubmissions = submissions.slice(0, 50);
+
+            let html = `
+                <table class="submissions-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Week</th>
+                            <th>Pos</th>
+                            <th>Answer</th>
+                            <th>Result</th>
+                            <th>Browser</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            recentSubmissions.forEach(sub => {
+                const isCorrect = sub.is_correct === 1;
+                const rowClass = isCorrect ? 'correct' : 'incorrect';
+                const timeAgo = formatTimeAgo(sub.submitted_at);
+                const browser = getBrowserName(sub.user_agent);
+
+                html += `
+                    <tr class="${rowClass}">
+                        <td>
+                            <span class="time-ago" title="${sub.submitted_at}">${timeAgo}</span>
+                        </td>
+                        <td>${sub.week || '-'}</td>
+                        <td><span class="badge badge-position">${sub.position}</span></td>
+                        <td><span class="answer-text">${escapeHtml(sub.answer_given)}</span></td>
+                        <td>
+                            ${isCorrect 
+                                ? '<span class="badge badge-correct">✓ Correct</span>' 
+                                : '<span class="badge badge-incorrect">✗ Wrong</span>'}
+                        </td>
+                        <td title="${escapeHtml(sub.user_agent)}">${browser}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            if (submissions.length > 50) {
+                html += `<p style="margin-top: 15px; color: #666; text-align: center;">Showing most recent 50 of ${submissions.length} submissions</p>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // Update submission stats
+        function updateSubmissionStats(stats) {
+            document.getElementById('total-submissions').textContent = stats.total_submissions || 0;
+            document.getElementById('correct-submissions').textContent = stats.correct_submissions || 0;
+            document.getElementById('unique-ips').textContent = stats.unique_ips || 0;
+            document.getElementById('unique-agents').textContent = stats.unique_user_agents || 0;
+        }
+
+        // Format time ago
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString + 'Z'); // Assume UTC
+            const now = new Date();
+            const diffMs = now - date;
+            const diffSecs = Math.floor(diffMs / 1000);
+            const diffMins = Math.floor(diffSecs / 60);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffSecs < 60) return 'just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        // Get browser name from user agent
+        function getBrowserName(ua) {
+            if (!ua) return 'Unknown';
+            if (ua.includes('Edg/')) return 'Edge';
+            if (ua.includes('Chrome/')) return 'Chrome';
+            if (ua.includes('Firefox/')) return 'Firefox';
+            if (ua.includes('Safari/') && !ua.includes('Chrome')) return 'Safari';
+            return 'Other';
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Submit new riddle
