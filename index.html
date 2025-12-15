@@ -653,9 +653,9 @@
                 <select id="week-select" onchange="switchWeek()">
                     <option value="1">Week 1</option>
                     <option value="2">Week 2</option>
-                    <option value="3-tue">Week 3 - Tuesday</option>
-                    <option value="3-wed">Week 3 - Wednesday</option>
-                    <option value="3-thu">Week 3 - Thursday</option>
+                    <option value="31">Week 3 - Tuesday</option>
+                    <option value="32">Week 3 - Wednesday</option>
+                    <option value="33">Week 3 - Thursday</option>
                 </select>
             </div>
             <h2 class="riddles-title">🎅 Riddles 🎄</h2>
@@ -728,7 +728,7 @@
     <script>
         const API_BASE_URL = 'https://cardioid.co.nz/api';
         let riddlesData = { active: [], expired: [] };
-        let currentWeek = '2';
+        let currentWeek = '31';
         let solvedRiddles = {};
 
         // Helper to check if current week is a week 3 day
@@ -1473,7 +1473,7 @@
         // Reset all weeks (for testing)
         function resetAllProgress() {
             if (confirm('Are you sure you want to reset ALL progress for ALL weeks?')) {
-                for (let i = 1; i <= 4; i++) {
+                for (let i = 1; i <= 40; i++) {
                     localStorage.removeItem(`solvedRiddles_week${i}`);
                     localStorage.removeItem(`alertShown_week${i}`);
                 }
@@ -1487,8 +1487,8 @@
                 sudokuSolved = false;
                 resetSudoku();
                 solvedRiddles = {};
-                currentWeek = '1';
-                document.getElementById('week-select').value = '1';
+                currentWeek = '31';
+                document.getElementById('week-select').value = '31';
                 updateCombinationDisplay();
                 loadRiddles();
             }
