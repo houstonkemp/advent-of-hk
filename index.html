@@ -1111,6 +1111,21 @@
                     }
                 }
 
+                // Week 3: no answer form - test on physical lock
+                if (isWeek3()) {
+                    return `
+                        <div class="riddle-card" data-riddle-id="${riddle.id}">
+                            <div class="riddle-header">
+                                <span class="riddle-status active">🔐 Physical Lock</span>
+                            </div>
+                            <div class="riddle-text">${riddle.riddle_text}</div>
+                            <div class="feedback" style="display: block; background: #e8f4e8; color: #2d5a2d;">
+                                🎅 Solve the riddle and test your answer on the physical combination lock!
+                            </div>
+                        </div>
+                    `;
+                }
+
                 return `
                     <div class="riddle-card ${cardClass}" data-riddle-id="${riddle.id}" data-is-expired="${isExpired}">
                         <div class="riddle-header">
@@ -1350,35 +1365,14 @@
             const positions = [1, 2, 3];
             const label = document.getElementById('digit-label');
 
-            // Week 3: Each riddle reveals full combo independently
+            // Week 3: Hide the combination display entirely - physical lock only
             if (isWeek3()) {
-                const solved = Object.values(solvedRiddles).find(r => r.combo);
-                
-                if (solved) {
-                    positions.forEach((position, index) => {
-                        const digitBox = document.getElementById(`digit-${position}`);
-                        digitBox.textContent = solved.combo[index];
-                        digitBox.classList.add('unlocked');
-                    });
-                    label.innerHTML = '🎄 You\'ve unlocked the secret code! 🎄';
-                    
-                    // Show alert once
-                    const weekKey = `alertShown_week${currentWeek}`;
-                    const alertShown = localStorage.getItem(weekKey);
-                    if (!alertShown) {
-                        localStorage.setItem(weekKey, 'true');
-                        setTimeout(() => {
-                            alert('🎄🎅 Ho Ho Ho! Congratulations! You\'ve unlocked the secret code! Merry Christmas! 🎁✨');
-                        }, 500);
-                    }
-                } else {
-                    positions.forEach(position => {
-                        const digitBox = document.getElementById(`digit-${position}`);
-                        digitBox.textContent = '?';
-                        digitBox.classList.remove('unlocked');
-                    });
-                    label.textContent = 'Solve the riddle to unlock the secret code!';
-                }
+                positions.forEach(position => {
+                    const digitBox = document.getElementById(`digit-${position}`);
+                    digitBox.textContent = '?';
+                    digitBox.classList.remove('unlocked');
+                });
+                label.textContent = '🔐 Test your answer on the physical combination lock!';
                 return;
             }
 
