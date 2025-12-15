@@ -653,7 +653,9 @@
                 <select id="week-select" onchange="switchWeek()">
                     <option value="1">Week 1</option>
                     <option value="2">Week 2</option>
-                    <option value="3">Week 3</option>
+                    <option value="3-tue">Week 3 - Tuesday</option>
+                    <option value="3-wed">Week 3 - Wednesday</option>
+                    <option value="3-thu">Week 3 - Thursday</option>
                 </select>
             </div>
             <h2 class="riddles-title">🎅 Riddles 🎄</h2>
@@ -726,8 +728,21 @@
     <script>
         const API_BASE_URL = 'https://cardioid.co.nz/api';
         let riddlesData = { active: [], expired: [] };
-        let currentWeek = 2;
+        let currentWeek = '2';
         let solvedRiddles = {};
+
+        // Helper to check if current week is a week 3 day
+        function isWeek3() {
+            return currentWeek.startsWith('3-');
+        }
+
+        // Helper to get the base week number for API filtering
+        function getWeekNumber() {
+            if (isWeek3()) {
+                return currentWeek; // e.g., '3-tue', '3-wed', '3-thu'
+            }
+            return currentWeek;
+        }
 
         // Week 2 Sudoku Configuration
         const SUDOKU_INITIAL = [
@@ -977,6 +992,11 @@
             const weekKey = `solvedRiddles_week${currentWeek}`;
             solvedRiddles = JSON.parse(localStorage.getItem(weekKey) || '{}');
 
+            // Week 3 doesn't need the "collect 3" logic - each riddle is standalone
+            if (isWeek3()) {
+                return;
+            }
+
             const nonExpiredSolved = Object.values(solvedRiddles).filter(r => !r.expired);
             if (nonExpiredSolved.length === 3) {
                 Object.keys(solvedRiddles).forEach(key => {
@@ -1003,7 +1023,7 @@
 
         // Switch to a different week
         function switchWeek() {
-            const newWeek = parseInt(document.getElementById('week-select').value);
+            const newWeek = document.getElementById('week-select').value;
             if (newWeek !== currentWeek) {
                 currentWeek = newWeek;
                 localStorage.setItem('currentWeek', currentWeek);
@@ -1029,10 +1049,11 @@
                 const data = await response.json();
 
                 if (data.status === 'success') {
+                    const weekFilter = getWeekNumber();
                     const activeRiddles = (data.active_riddles || data.riddles || [])
-                        .filter(r => !r.week || r.week == currentWeek);
+                        .filter(r => !r.week || r.week == weekFilter);
                     const expiredRiddles = (data.expired_riddles || [])
-                        .filter(r => !r.week || r.week == currentWeek);
+                        .filter(r => !r.week || r.week == weekFilter);
 
                     riddlesData = { active: activeRiddles, expired: expiredRiddles };
 
@@ -1076,6 +1097,20 @@
                 const statusText = isSolved ? '✓ Solved' : (isExpired ? '⏰ Expired' : 'Active');
                 const cardClass = isSolved ? 'solved' : (isExpired ? 'expired' : '');
 
+                // Week 3: show the combo they found
+                let solvedMessage = '';
+                if (isSolved) {
+                    if (isExpired) {
+                        solvedMessage = 'Correct! (Expired - no score)';
+                    } else if (isWeek3() && solvedRiddles[riddle.id].combo) {
+                        solvedMessage = `🎄 Correct! The code is: ${solvedRiddles[riddle.id].combo.join('')}`;
+                    } else if (solvedRiddles[riddle.id].revealed) {
+                        solvedMessage = `Correct! You unlocked digit ${riddle.position}`;
+                    } else {
+                        solvedMessage = `Correct! You found a digit - ${solvedRiddles[riddle.id].digit}`;
+                    }
+                }
+
                 return `
                     <div class="riddle-card ${cardClass}" data-riddle-id="${riddle.id}" data-is-expired="${isExpired}">
                         <div class="riddle-header">
@@ -1096,7 +1131,7 @@
                             </form>
                             <div class="feedback" id="feedback-${riddle.id}"></div>
                         ` : `
-                            <div class="feedback success">${isExpired ? 'Correct! (Expired - no score)' : (isSolved && solvedRiddles[riddle.id].revealed ? `Correct! You unlocked digit ${riddle.position}` : `Correct! You found a digit - ${solvedRiddles[riddle.id].digit}`)}</div>
+                            <div class="feedback success">${solvedMessage}</div>
                         `}
                     </div>
                 `;
@@ -1227,10 +1262,30 @@
 
                     if (isExpired || data.is_expired) {
                         feedback.textContent = `Correct! (Expired - no score)`;
+                        solvedRiddles[riddleId] = {
+                            digit: data.digit,
+                            position: data.position,
+                            solvedAt: new Date().toISOString(),
+                            expired: true
+                        };
+                        saveWeekData();
+                    } else if (isWeek3()) {
+                        // Week 3: digit is a 3-digit combo (e.g., "427" or "69" -> "069")
+                        const comboString = String(data.digit).padStart(3, '0');
+                        const combo = comboString.split('');
+                        
+                        feedback.textContent = `🎄 Correct! The secret code is: ${comboString}`;
+                        
+                        solvedRiddles[riddleId] = {
+                            combo: combo,
+                            solvedAt: new Date().toISOString()
+                        };
+                        saveWeekData();
+                        updateCombinationDisplay();
                     } else {
-                        // For week 2, check if this is the third solve - don't reveal digit yet
+                        // Weeks 1-2: standard "collect 3 digits" logic
                         const currentNonExpiredCount = Object.values(solvedRiddles).filter(r => !r.expired).length;
-                        const isThirdSolveWeek2 = currentWeek === 2 && currentNonExpiredCount === 2;
+                        const isThirdSolveWeek2 = currentWeek === '2' && currentNonExpiredCount === 2;
                             
                         if (isThirdSolveWeek2) {
                             feedback.textContent = `Correct! Now solve the Sudoku to reveal all digits!`;
@@ -1256,7 +1311,7 @@
                             saveWeekData();
 
                             // Week 2 special: Open sudoku instead of revealing digits
-                            if (currentWeek === 2) {
+                            if (currentWeek === '2') {
                                 setTimeout(() => {
                                     feedback.textContent = `🎄 All riddles solved! But you now need to solve this Sudoku puzzle! 🎄`;
                                     openSudoku();
@@ -1269,16 +1324,6 @@
                         }
 
                         updateCombinationDisplay();
-                    }
-
-                    if (isExpired || data.is_expired) {
-                        solvedRiddles[riddleId] = {
-                            digit: data.digit,
-                            position: data.position,
-                            solvedAt: new Date().toISOString(),
-                            expired: true
-                        };
-                        saveWeekData();
                     }
 
                     setTimeout(() => {
@@ -1303,10 +1348,43 @@
         // Update the combination display
         function updateCombinationDisplay() {
             const positions = [1, 2, 3];
-            const nonExpiredSolved = Object.values(solvedRiddles).filter(r => !r.expired);
+            const label = document.getElementById('digit-label');
+
+            // Week 3: Each riddle reveals full combo independently
+            if (isWeek3()) {
+                const solved = Object.values(solvedRiddles).find(r => r.combo);
+                
+                if (solved) {
+                    positions.forEach((position, index) => {
+                        const digitBox = document.getElementById(`digit-${position}`);
+                        digitBox.textContent = solved.combo[index];
+                        digitBox.classList.add('unlocked');
+                    });
+                    label.innerHTML = '🎄 You\'ve unlocked the secret code! 🎄';
+                    
+                    // Show alert once
+                    const weekKey = `alertShown_week${currentWeek}`;
+                    const alertShown = localStorage.getItem(weekKey);
+                    if (!alertShown) {
+                        localStorage.setItem(weekKey, 'true');
+                        setTimeout(() => {
+                            alert('🎄🎅 Ho Ho Ho! Congratulations! You\'ve unlocked the secret code! Merry Christmas! 🎁✨');
+                        }, 500);
+                    }
+                } else {
+                    positions.forEach(position => {
+                        const digitBox = document.getElementById(`digit-${position}`);
+                        digitBox.textContent = '?';
+                        digitBox.classList.remove('unlocked');
+                    });
+                    label.textContent = 'Solve the riddle to unlock the secret code!';
+                }
+                return;
+            }
 
             // Week 2 special handling
-            if (currentWeek === 2) {
+            if (currentWeek === '2') {
+                const nonExpiredSolved = Object.values(solvedRiddles).filter(r => !r.expired);
                 const allRiddlesSolved = nonExpiredSolved.length === 3;
 
                 positions.forEach((position, index) => {
@@ -1323,7 +1401,6 @@
                     }
                 });
 
-                const label = document.getElementById('digit-label');
                 if (allRiddlesSolved && sudokuSolved) {
                     label.innerHTML = '🎄 You\'ve unlocked Santa\'s secret code! 🎄';
                 } else if (allRiddlesSolved) {
@@ -1343,41 +1420,41 @@
                         alert('🎄🎅 Ho Ho Ho! Congratulations! You\'ve unlocked Santa\'s secret code! Merry Christmas! 🎁✨');
                     }, 500);
                 }
+                return;
+            }
 
-            } else {
-                // Standard week behavior
-                const allRevealed = nonExpiredSolved.length === 3 && nonExpiredSolved.every(r => r.revealed);
+            // Week 1: Standard week behavior
+            const nonExpiredSolved = Object.values(solvedRiddles).filter(r => !r.expired);
+            const allRevealed = nonExpiredSolved.length === 3 && nonExpiredSolved.every(r => r.revealed);
 
-                positions.forEach(position => {
-                    const digitBox = document.getElementById(`digit-${position}`);
-                    const solved = Object.values(solvedRiddles).find(r => r.position === position && !r.expired);
+            positions.forEach(position => {
+                const digitBox = document.getElementById(`digit-${position}`);
+                const solved = Object.values(solvedRiddles).find(r => r.position === position && !r.expired);
 
-                    if (solved && allRevealed) {
-                        digitBox.textContent = solved.digit;
-                        digitBox.classList.add('unlocked');
-                    } else {
-                        digitBox.textContent = '?';
-                        digitBox.classList.remove('unlocked');
-                    }
-                });
-
-                const label = document.getElementById('digit-label');
-                if (allRevealed) {
-                    label.textContent = '🎄 You\'ve unlocked Santa\'s secret code! 🎄';
-                } else if (nonExpiredSolved.length > 0) {
-                    label.textContent = `You've found ${nonExpiredSolved.length} of 3 digits! Keep solving to reveal their positions!`;
+                if (solved && allRevealed) {
+                    digitBox.textContent = solved.digit;
+                    digitBox.classList.add('unlocked');
                 } else {
-                    label.textContent = 'Solve the riddles to collect all 3 magic numbers!';
+                    digitBox.textContent = '?';
+                    digitBox.classList.remove('unlocked');
                 }
+            });
 
-                const weekKey = `alertShown_week${currentWeek}`;
-                const alertShown = localStorage.getItem(weekKey);
-                if (allRevealed && !alertShown) {
-                    localStorage.setItem(weekKey, 'true');
-                    setTimeout(() => {
-                        alert('🎄🎅 Ho Ho Ho! Congratulations! You\'ve unlocked Santa\'s secret code! Merry Christmas! 🎁✨');
-                    }, 500);
-                }
+            if (allRevealed) {
+                label.textContent = '🎄 You\'ve unlocked Santa\'s secret code! 🎄';
+            } else if (nonExpiredSolved.length > 0) {
+                label.textContent = `You've found ${nonExpiredSolved.length} of 3 digits! Keep solving to reveal their positions!`;
+            } else {
+                label.textContent = 'Solve the riddles to collect all 3 magic numbers!';
+            }
+
+            const weekKey = `alertShown_week${currentWeek}`;
+            const alertShown = localStorage.getItem(weekKey);
+            if (allRevealed && !alertShown) {
+                localStorage.setItem(weekKey, 'true');
+                setTimeout(() => {
+                    alert('🎄🎅 Ho Ho Ho! Congratulations! You\'ve unlocked Santa\'s secret code! Merry Christmas! 🎁✨');
+                }, 500);
             }
         }
 
@@ -1388,7 +1465,7 @@
                 const alertKey = `alertShown_week${currentWeek}`;
                 localStorage.removeItem(weekKey);
                 localStorage.removeItem(alertKey);
-                if (currentWeek === 2) {
+                if (currentWeek === '2') {
                     localStorage.removeItem('sudokuSolved_week2');
                     sudokuSolved = false;
                     resetSudoku();
@@ -1406,13 +1483,18 @@
                     localStorage.removeItem(`solvedRiddles_week${i}`);
                     localStorage.removeItem(`alertShown_week${i}`);
                 }
+                // Also clear week 3 days
+                ['3-tue', '3-wed', '3-thu'].forEach(w => {
+                    localStorage.removeItem(`solvedRiddles_week${w}`);
+                    localStorage.removeItem(`alertShown_week${w}`);
+                });
                 localStorage.removeItem('currentWeek');
                 localStorage.removeItem('sudokuSolved_week2');
                 sudokuSolved = false;
                 resetSudoku();
                 solvedRiddles = {};
-                currentWeek = 1;
-                document.getElementById('week-select').value = 1;
+                currentWeek = '1';
+                document.getElementById('week-select').value = '1';
                 updateCombinationDisplay();
                 loadRiddles();
             }
