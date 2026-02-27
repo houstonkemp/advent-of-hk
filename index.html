@@ -14,7 +14,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f4c20 0%, #8B0000 100%);
+            background: linear-gradient(135deg, #0a1628 0%, #0d6e8a 100%);
             min-height: 100vh;
             padding: 20px;
             color: #333;
@@ -55,7 +55,7 @@
         .combination-title {
             text-align: center;
             font-size: 1.2em;
-            color: #c41e3a;
+            color: #0d6e8a;
             margin-bottom: 20px;
             font-weight: 600;
         }
@@ -70,24 +70,24 @@
         .digit-box {
             width: 80px;
             height: 100px;
-            border: 3px solid #d4af37;
+            border: 3px solid #17a2c4;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 3em;
             font-weight: bold;
-            color: #c41e3a;
-            background: #fff9f0;
+            color: #0d6e8a;
+            background: #f0f8ff;
             transition: all 0.3s ease;
             position: relative;
             box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
         }
 
         .digit-box.unlocked {
-            background: linear-gradient(135deg, #c41e3a 0%, #0f4c20 100%);
-            color: #ffd700;
-            border-color: #ffd700;
+            background: linear-gradient(135deg, #0d6e8a 0%, #0a1628 100%);
+            color: #17a2c4;
+            border-color: #17a2c4;
             animation: unlock 0.5s ease;
         }
 
@@ -121,12 +121,12 @@
 
         .week-selector label {
             font-weight: 600;
-            color: #c41e3a;
+            color: #0d6e8a;
         }
 
         .week-selector select {
             padding: 8px 16px;
-            border: 2px solid #d4af37;
+            border: 2px solid #17a2c4;
             border-radius: 8px;
             font-size: 1em;
             background: white;
@@ -136,19 +136,19 @@
 
         .week-selector select:focus {
             outline: none;
-            border-color: #c41e3a;
+            border-color: #0d6e8a;
         }
 
         .riddles-title {
             font-size: 1.5em;
-            color: #c41e3a;
+            color: #0d6e8a;
             margin-bottom: 20px;
             font-weight: 600;
         }
 
         .riddle-card {
-            background: #fff9f0;
-            border-left: 4px solid #d4af37;
+            background: #f0f8ff;
+            border-left: 4px solid #17a2c4;
             padding: 20px;
             margin-bottom: 20px;
             border-radius: 8px;
@@ -168,7 +168,7 @@
         .riddle-card.expired {
             opacity: 0.7;
             border-left-color: #ff9800;
-            background: #fff5e6;
+            background: #e8f4f8;
         }
 
         .riddle-header {
@@ -180,7 +180,7 @@
 
         .riddle-number {
             font-weight: 600;
-            color: #c41e3a;
+            color: #0d6e8a;
         }
 
         .riddle-status {
@@ -230,12 +230,12 @@
 
         .answer-input:focus {
             outline: none;
-            border-color: #d4af37;
+            border-color: #17a2c4;
         }
 
         .submit-btn {
             padding: 12px 30px;
-            background: linear-gradient(135deg, #c41e3a 0%, #8B0000 100%);
+            background: linear-gradient(135deg, #0d6e8a 0%, #0d6e8a 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -279,7 +279,7 @@
         .loading {
             text-align: center;
             padding: 40px;
-            color: #c41e3a;
+            color: #0d6e8a;
         }
 
         .error-message {
@@ -350,7 +350,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: linear-gradient(135deg, #1a472a 0%, #0d2818 50%, #8B0000 100%);
+            background: linear-gradient(135deg, #0a1628 0%, #061020 50%, #0d6e8a 100%);
             z-index: 10000;
             display: none;
             flex-direction: column;
@@ -391,7 +391,7 @@
         }
 
         .sudoku-header h2 {
-            color: #c41e3a;
+            color: #0d6e8a;
             font-size: 1.8em;
             margin-bottom: 10px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
@@ -432,9 +432,9 @@
             text-align: center;
             font-size: 1.8em;
             font-weight: bold;
-            color: #0f4c20;
+            color: #0a1628;
             outline: none;
-            caret-color: #c41e3a;
+            caret-color: #0d6e8a;
         }
 
         .sudoku-cell input:focus {
@@ -447,7 +447,7 @@
         }
 
         .sudoku-cell.highlight {
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4a 100%);
+            background: linear-gradient(135deg, #17a2c4 0%, #64c8e8 100%);
             animation: highlightPulse 1s ease-in-out infinite;
         }
 
@@ -457,11 +457,11 @@
         }
 
         .sudoku-cell.error {
-            background: #ffcccc;
+            background: #cce8f4;
         }
 
         .sudoku-cell.error input {
-            color: #c41e3a;
+            color: #0d6e8a;
         }
 
         /* Box borders for 6x6 (2 rows x 3 cols per box) */
@@ -496,7 +496,7 @@
         }
 
         .sudoku-btn.primary {
-            background: linear-gradient(135deg, #c41e3a 0%, #8B0000 100%);
+            background: linear-gradient(135deg, #0d6e8a 0%, #0d6e8a 100%);
             color: white;
         }
 
@@ -535,7 +535,7 @@
             text-align: center;
             margin-top: 20px;
             padding: 20px;
-            background: linear-gradient(135deg, #0f4c20 0%, #1a5c30 100%);
+            background: linear-gradient(135deg, #0a1628 0%, #0d4a6e 100%);
             border-radius: 12px;
             display: none;
         }
@@ -552,7 +552,7 @@
         }
 
         .code-reveal h3 {
-            color: #ffd700;
+            color: #17a2c4;
             font-size: 1.3em;
             margin-bottom: 15px;
         }
@@ -566,14 +566,14 @@
         .code-digit {
             width: 60px;
             height: 80px;
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4a 100%);
+            background: linear-gradient(135deg, #17a2c4 0%, #64c8e8 100%);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2.5em;
             font-weight: bold;
-            color: #8B0000;
+            color: #0d6e8a;
             box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
         }
 
@@ -1203,9 +1203,9 @@
                 canvas.height = 50;
                 ctx.textBaseline = 'top';
                 ctx.font = '14px Arial';
-                ctx.fillStyle = '#f60';
+                ctx.fillStyle = '#0d6e8a';
                 ctx.fillRect(125, 1, 62, 20);
-                ctx.fillStyle = '#069';
+                ctx.fillStyle = '#17a2c4';
                 ctx.fillText('Canvas Fingerprint 🎄', 2, 15);
                 fingerprint.canvas_hash = canvas.toDataURL().slice(-50);
             } catch (e) {
@@ -1398,7 +1398,7 @@
                 if (allRiddlesSolved && sudokuSolved) {
                     label.innerHTML = '🎄 You\'ve unlocked Santa\'s secret code! 🎄';
                 } else if (allRiddlesSolved) {
-                    label.innerHTML = 'All riddles solved! <a href="javascript:openSudoku()" style="color: #c41e3a; font-weight: bold;">Click here to solve the Sudoku puzzle!</a>';
+                    label.innerHTML = 'All riddles solved! <a href="javascript:openSudoku()" style="color: #0d6e8a; font-weight: bold;">Click here to solve the Sudoku puzzle!</a>';
                 } else if (nonExpiredSolved.length > 0) {
                     label.textContent = `You've found ${nonExpiredSolved.length} of 3 digits! Keep solving!`;
                 } else {
